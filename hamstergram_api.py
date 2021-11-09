@@ -4,6 +4,8 @@ API de messagerie pour Hamstramgram.
 GitHub : https://github.com/Tadf0in/Hamstergram
 """
 
+import sqlite3
+
 def _creer_connexion(db_file):
     """ Crée une connexion à la base de données SQLite spécifiée par db_file.
         Le fichier est créé s'il n'existe pas.
