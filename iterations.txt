@@ -1,1 +1,10 @@
-tt
+L'api est une api de messagerie pour réseau social. Elle integrera des fonctions pour créer un utilisateur, ajouter des amis, creer des groupes ...
+
+Nino : fonction create_user() pour ajouter un utilisateur
+Louis : fonction add_friend() pour ajouter un ami
+
+BDD : USERS(_username : TEXT_,  name : TEXT, password : TEXT, #friend_list_id : INT, bio : TEXT, email : TEXT)
+      GROUPES(_groupe_id : INT_, users : TEXT, #owner : TEXT) // users contient tous les usernames des amis séparés par des ';' 
+      FRIEND_LISTS(_friend_list_id : INT_, users : TEXT) // ex : '#username;#username;#username'...
+      MESSAGES(_message_id : INT_, #receiver : TEXT, #sender : TEXT, content : TEXT)
+ 
