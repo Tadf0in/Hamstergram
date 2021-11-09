@@ -1,1 +1,4 @@
-kfoze
+ajouter un utilisateur
+ajouter un ami
+démarrer une discussion entre 2 utilisateurs
+démarrer une discussion de groupe
