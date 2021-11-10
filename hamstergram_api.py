@@ -26,6 +26,21 @@ def _creer_connexion(db_file):
 def add_user():
     pass
 
+def remove_user(username):
+    """ Supprime l'utilisateur 
+    In : username (str) : username d'un utilisateur inscrit
+    Out :
+        Retourne -1 si une erreur se produit
+    """
+    conn = _creer_connexion('hamstergram.db')
+    cur = conn.cursor()
+    query = f"""
+    DELETE FROM USERS 
+    WHERE username ='{username}'
+    """
+    cur.execute(query)
+    conn.close()
+
 
 def add_friend():
     pass
