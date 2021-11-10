@@ -22,6 +22,25 @@ def _creer_connexion(db_file):
 
     return None
 
+def _update_db(db, sql_file):
+    """ Execute les requêtes SQL de sql_file pour modifier la DB db
+    In : db (objet connexion)
+         sql_file (str) : Chemin vers un fichier SQL (.sql)
+    Out : 
+    """
+    # Lecture du fichier et placement des requetes dans un tableau
+    createFile = open(sql_file, 'r')
+    createSql = createFile.read()
+    createFile.close()
+    sqlQueries = createSql.split(";")
+
+    # Execution de toutes les requetes du tableau
+    cursor = conn.cursor()
+    for query in sqlQueries:
+        cursor.execute(query)
+
+    # commit des modifications
+    conn.commit()
 
 def add_user():
     pass
