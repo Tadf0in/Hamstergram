@@ -23,6 +23,21 @@ def _creer_connexion(db_file):
     return None
 
 
+def add_user():
+    pass
+
+
+def add_friend():
+    pass
+
+
+def start_disc():
+    pass
+
+
+def create_group():
+    pass
+
 
 if __name__ == '__main__':
     assert 1 == 1
