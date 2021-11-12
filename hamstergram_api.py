@@ -78,3 +78,5 @@ def create_group():
 
 if __name__ == '__main__':
     assert remove_user(1) == -1
+    assert remove_user(toto) == -1
+    assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
