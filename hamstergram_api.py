@@ -41,7 +41,7 @@ def _update_db(db, sql_file):
 
     # commit des modifications
     db.commit()
-    
+
 def _execute(query):
     """
     Exécute la requête dans la bdd
@@ -56,7 +56,22 @@ def add_user():
     pass
 
 def remove_user(username):
-    pass
+    """ Supprime l'utilisateur 
+    In : username (str) : username d'un utilisateur inscrit
+    Out :
+        Retourne -1 si l'username est invalide
+    """
+    if type(username) != str():
+        return -1
+    else :
+        db = _creer_connexion('hamstergram.db')
+        cur = db.cursor()
+        query = f"""
+        DELETE FROM USERS 
+        WHERE username ='{username}'
+        """
+        cur.execute(query)
+        db.close()
 
 
 def add_friend():
@@ -72,4 +87,5 @@ def create_group():
 
 
 if __name__ == '__main__':
-    assert 1 == 1
+    assert remove_user(1) == -1
+    assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
