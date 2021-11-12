@@ -1,6 +1,12 @@
 ajouter un utilisateur
+supprimer un utilisateur ✓
+
 ajouter un ami
-démarrer une discussion entre 2 utilisateurs
+supprimer un ami
+
+discuter entre 2 utilisateurs
+
 démarrer une discussion de groupe
+envoyer un message dans un groupe
 
 update iterations.txt
