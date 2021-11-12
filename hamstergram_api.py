@@ -45,6 +45,24 @@ def _update_db(db, sql_file):
 def add_user():
     pass
 
+def remove_user(username):
+    """ Supprime l'utilisateur 
+    In : username (str) : username d'un utilisateur inscrit
+    Out :
+        Retourne -1 si les conditions ne sont pas respectées
+    """
+    if type(username) != str():
+        return -1
+    else :
+        db = _creer_connexion('hamstergram.db')
+        cur = db.cursor()
+        query = f"""
+        DELETE FROM USERS 
+        WHERE username ='{username}'
+        """
+        cur.execute(query)
+        db.close()
+
 
 def add_friend():
     pass
