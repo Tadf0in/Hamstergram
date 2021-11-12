@@ -49,7 +49,7 @@ def remove_user(username):
     """ Supprime l'utilisateur 
     In : username (str) : username d'un utilisateur inscrit
     Out :
-        Retourne -1 si les conditions ne sont pas respectées
+        Retourne -1 si l'username est invalide
     """
     if type(username) != str():
         return -1
