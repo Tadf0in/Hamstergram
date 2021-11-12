@@ -77,4 +77,4 @@ def create_group():
 
 
 if __name__ == '__main__':
-    assert 1 == 1
+    assert remove_user(1) == -1
