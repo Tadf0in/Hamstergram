@@ -35,12 +35,12 @@ def _update_db(db, sql_file):
     sqlQueries = createSql.split(";")
 
     # Execution de toutes les requetes du tableau
-    cursor = conn.cursor()
+    cursor = db.cursor()
     for query in sqlQueries:
         cursor.execute(query)
 
     # commit des modifications
-    conn.commit()
+    db.commit()
     
 def _execute(query):
     """
