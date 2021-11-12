@@ -41,6 +41,16 @@ def _update_db(db, sql_file):
 
     # commit des modifications
     conn.commit()
+ 
+def _execute(query):
+    """
+    Exécute la requête dans la bdd
+    In : query (str) : requête sql
+    """
+    db = _creer_connexion('db test.db')
+    cur = db.cursor()
+    cur.execute(query)
+    db.close()
 
 def add_user():
     pass
@@ -78,5 +88,4 @@ def create_group():
 
 if __name__ == '__main__':
     assert remove_user(1) == -1
-    assert remove_user(toto) == -1
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
