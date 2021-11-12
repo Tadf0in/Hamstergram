@@ -63,9 +63,15 @@ def remove_user(username):
         cur.execute(query)
         db.close()
 
+def add_friend(friend_name):
+    """ Fonction pour ajouter un utilisateur en ami.
 
-def add_friend():
-    pass
+    In : friend_name (str) : correspond au nom d'utilisateur d'un utilisateur enregistré
+    Out :
+    Retourne -1 si les conditions ne sont pas respectées
+    """
+    if type(friend_name) != str():
+        return -1
 
 
 def start_disc():
