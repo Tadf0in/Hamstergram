@@ -64,15 +64,11 @@ def remove_user(username):
     if type(username) != str():
         return -1
     else :
-        db = _creer_connexion('hamstergram.db')
-        cur = db.cursor()
         query = f"""
         DELETE FROM USERS 
         WHERE username ='{username}'
         """
-        cur.execute(query)
-        db.close()
-
+        _execute(query)
 
 def add_friend():
     pass
