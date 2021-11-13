@@ -96,7 +96,8 @@ def create_group():
 
 if __name__ == '__main__':
     # Tests pour remove_user() :
+    _update_db('test.sql')
     assert remove_user(1) == -1
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
-    _execute("INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123');")
+    
     assert remove_user('JexisteDeja') == 0

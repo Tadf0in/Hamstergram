@@ -1,1 +1,1 @@
-INSERT INTO USERS (username, name, mail password) VALUES (toto, Thomas, thomas@mail.fr, azerty123)
+INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123');
