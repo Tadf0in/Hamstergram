@@ -91,6 +91,14 @@ def add_friend(user_name, friend_name):
         Retourne -1 si un des username est invalide ou si déjà amis
         Retourne 0 si les utilisateurs ont bien été ajoutés en amis
     """
+    if type(user_name) != str or type(friend_name) != str :
+        return -1 # Username invalide car pas str
+    else :
+        query = f"""
+        INSERT INTO FRIENDS
+        """
+
+
 
 def start_disc():
     pass
