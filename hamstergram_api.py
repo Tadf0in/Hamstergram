@@ -98,8 +98,6 @@ def add_friend(user_name, friend_name):
         INSERT INTO FRIENDS
         """
 
-
-
 def start_disc():
     pass
 
