@@ -1,4 +1,4 @@
-ajouter un utilisateur
+﻿ajouter un utilisateur
 supprimer un utilisateur ✓
 
 ajouter un ami
@@ -10,3 +10,5 @@ démarrer une discussion de groupe
 envoyer un message dans un groupe
 
 update iterations.txt
+
+testDistant
