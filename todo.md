@@ -1,14 +1,14 @@
 - [x] Ajouter un utlisateur
-- [X] Supprimer un utilisateur  
+- [X] Supprimer un utilisateur   
 
 
 
 - [ ] Ajouter un ami
-- [ ] Supprimer un ami  
+- [ ] Supprimer un ami   
 
 
 
-- [ ] Discuter entre 2 utilisateurs  
+- [ ] Discuter entre 2 utilisateurs   
 
 
 
