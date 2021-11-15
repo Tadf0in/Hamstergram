@@ -61,9 +61,46 @@ def _execute(query):
     db.close()
     return response
 
+def add_user(username : str, name : str, mail : str, password : str, bio : str =''):
+    """Ajoute un nouvel utilisateur
+    In : username : nom d'utilisateur 
+        name : nom de l'utilisateur
+        mail : email utilisateur
+        password : mot de passe
+        bio : biographie éventuelle de l'utilisateur
 
-def add_user():
-    pass
+    Out :
+        Retourne -1 si il y a une erreur
+        Retourne 0 si l'utilisateur a bien été supprimé 
+    """
+    if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str):
+        return -1  # si jamais le type n'es pas bon, on renvoie une erreur
+
+    query = f"""
+        SELECT name FROM USERS
+        WHERE username = '{username}';
+        """
+    if _execute(query) == [] :  # On vérifie que le nom d'utilisateur n'existe pas déjà
+        query = f"""
+        SELECT name FROM USERS
+        WHERE mail = '{mail}';
+        """
+        if _execute(query) == []:  # si il n'existe pas, on vérifie que l'email n'existe pas déjà
+            query = f"""INSERT INTO USERS(username, name, mail, password) 
+                    VALUES ('{username}', '{name}', '{mail}', '{password}'"""
+
+            if bio != "":
+                query += f',{bio});'
+            else:
+                query += ');'
+        
+            _execute(query)
+
+            return 0  # Pas d'erreur, on renvoie 0
+        else:
+            return -1  # On renvoie -1 car l'email existe déjà
+    else:
+        return -1  # On renvoie -1 car l'utilisateur existe déjà
 
 def remove_user(username):
     """ Supprime l'utilisateur 
@@ -108,8 +145,13 @@ def create_group():
     pass
 
 if __name__ == '__main__':
-    # Tests pour remove_user() :
     _update_db(_creer_connexion('test.db'), 'test.sql')
+    
+    # Tests pour add_user() :
+    # assert add_user('JexisteDeja', 'eoiokdeo', 'existe.deja@mail.fr', 'deded') == -1
+    # assert add_user('JeNexistePas', 'dedede', 'moinonplus@gmail.com', 'azerty') == 0
+
+    # Tests pour remove_user() :
     assert remove_user(1) == -1
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
     assert remove_user('JexisteDeja') == 0
