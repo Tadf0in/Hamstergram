@@ -69,7 +69,7 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
         Retourne 0 si l'utilisateur a bien été supprimé 
     """
     if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str):
-        raise TypeError  # si jamais le type n'es pas bon, on renvoie une erreur
+        return -1  # si jamais le type n'es pas bon, on renvoie une erreur
 
     query = f"""
         SELECT name FROM USERS
