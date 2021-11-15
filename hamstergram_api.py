@@ -55,6 +55,7 @@ def _execute(query):
     db.close()
     return response
 
+
 def add_user():
     pass
 
@@ -85,19 +86,18 @@ def remove_user(username):
 def add_friend():
     pass
 
-
 def start_disc():
     pass
-
 
 def create_group():
     pass
 
+print(remove_user('JexisteDeja'))
 
 if __name__ == '__main__':
+    pass
     # Tests pour remove_user() :
-    _update_db('test.sql')
-    assert remove_user(1) == -1
-    assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
-    
-    assert remove_user('JexisteDeja') == 0
+    # _update_db(_creer_connexion('test.db'), 'test.sql')
+    # assert remove_user(1) == -1
+    # assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
+    # assert remove_user('JexisteDeja') == 0
