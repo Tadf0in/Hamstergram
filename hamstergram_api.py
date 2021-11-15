@@ -89,6 +89,15 @@ def remove_user(username):
             _execute(query)
             return 0
 
+def _list_users():
+    """
+    Retourne la liste de tous les utilisateurs
+    """
+    query = f"""
+    SELECT * FROM USERS
+    """
+    print(_execute(query))
+
 def add_friend():
     pass
 
