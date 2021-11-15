@@ -93,7 +93,6 @@ def create_group():
     pass
 
 if __name__ == '__main__':
-    pass
     # Tests pour remove_user() :
     _update_db(_creer_connexion('test.db'), 'test.sql')
     assert remove_user(1) == -1
