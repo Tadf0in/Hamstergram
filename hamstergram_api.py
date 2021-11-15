@@ -47,7 +47,7 @@ def _execute(query):
     Exécute la requête dans la bdd
     In : query (str) : requête sql
     """
-    db = _creer_connexion('test.db')
+    db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
     cur.execute(query)
     response = cur.fetchall()
