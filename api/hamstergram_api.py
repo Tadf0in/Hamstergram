@@ -51,7 +51,7 @@ def _execute(query):
     In : query (str) : requête sql
     """
     if testing :
-        db = _creer_connexion('test.db')
+        db = _creer_connexion('test/test.db')
     else :
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
@@ -145,7 +145,7 @@ def create_group():
     pass
 
 if __name__ == '__main__':
-    _update_db(_creer_connexion('test.db'), 'test.sql')
+    _update_db(_creer_connexion('test/test.db'), 'test/test.sql')
     
     # Tests pour add_user() :
     # assert add_user('JexisteDeja', 'eoiokdeo', 'existe.deja@mail.fr', 'deded') == -1
