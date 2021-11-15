@@ -1,5 +1,5 @@
 - [x] Ajouter un utlisateur
-- [X] Supprimer un utilisateur   
+- [X] Supprimer un utilisateur   \
 
 
 
