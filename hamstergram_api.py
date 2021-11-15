@@ -83,8 +83,14 @@ def remove_user(username):
             _execute(query)
             return 0
 
-def add_friend():
-    pass
+def add_friend(user_name, friend_name):
+    """ Créer une relation d'amitié entre 2 utilisateurs
+    In : user_name (str) : Username du 1er utilisateur concerné
+         friend_name (str) : Username du 2eme utilisateur concerné
+    Out : 
+        Retourne -1 si un des username est invalide ou si déjà amis
+        Retourne 0 si les utilisateurs ont bien été ajoutés en amis
+    """
 
 def start_disc():
     pass
