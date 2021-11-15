@@ -6,6 +6,9 @@ GitHub : https://github.com/Tadf0in/Hamstergram
 
 import sqlite3
 
+if __name__ == '__main__':
+    testing = True
+
 def _creer_connexion(db_file):
     """ Crée une connexion à la base de données SQLite spécifiée par db_file.
         Le fichier est créé s'il n'existe pas.
@@ -47,11 +50,13 @@ def _execute(query):
     Exécute la requête dans la bdd
     In : query (str) : requête sql
     """
-    db = _creer_connexion('test.db')
+    if testing :
+        db = _creer_connexion('test.db')
+    else :
+        db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
     cur.execute(query)
     response = cur.fetchall()
-    print(response)
     db.commit()
     db.close()
     return response
@@ -97,7 +102,6 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
     else:
         return -1  # On renvoie -1 car l'utilisateur existe déjà
 
-
 def remove_user(username):
     """ Supprime l'utilisateur 
     In : username (str) : username d'un utilisateur inscrit
@@ -122,20 +126,33 @@ def remove_user(username):
             _execute(query)
             return 0
 
+def _list_users():
+    """
+    Retourne la liste de tous les utilisateurs
+    """
+    query = f"""
+    SELECT * FROM USERS
+    """
+    print(_execute(query))
 
 def add_friend():
     pass
 
-
 def start_disc():
     pass
-
 
 def create_group():
     pass
 
-
 if __name__ == '__main__':
+    _update_db(_creer_connexion('test.db'), 'test.sql')
+    
     # Tests pour add_user() :
-    assert add_user('JexisteDeja', 'eoiokdeo', 'existe.deja@mail.fr', 'deded') == -1
-    assert add_user('JeNexistePas', 'dedede', 'moinonplus@gmail.com', 'azerty') == 0
+    # assert add_user('JexisteDeja', 'eoiokdeo', 'existe.deja@mail.fr', 'deded') == -1
+    # assert add_user('JeNexistePas', 'dedede', 'moinonplus@gmail.com', 'azerty') == 0
+
+    # Tests pour remove_user() :
+    assert remove_user(1) == -1
+    assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
+    assert remove_user('JexisteDeja') == 0
+    print("Tests passés pour remove_user")
