@@ -6,6 +6,9 @@ GitHub : https://github.com/Tadf0in/Hamstergram
 
 import sqlite3
 
+if __name__ == '__main__':
+    testing = True
+
 def _creer_connexion(db_file):
     """ Crée une connexion à la base de données SQLite spécifiée par db_file.
         Le fichier est créé s'il n'existe pas.
@@ -47,7 +50,10 @@ def _execute(query):
     Exécute la requête dans la bdd
     In : query (str) : requête sql
     """
-    db = _creer_connexion('hamstergram.db')
+    if testing :
+        db = _creer_connexion('test.db')
+    else :
+        db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
     cur.execute(query)
     response = cur.fetchall()
