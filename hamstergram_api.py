@@ -41,23 +41,46 @@ def _update_db(db, sql_file):
 
     # commit des modifications
     db.commit()
-    
+
 def _execute(query):
     """
     Exécute la requête dans la bdd
     In : query (str) : requête sql
     """
-    db = _creer_connexion('db test.db')
+    db = _creer_connexion('test.db')
     cur = db.cursor()
     cur.execute(query)
+    response = cur.fetchall()
+    print(response)
     db.close()
+    return response
 
 def add_user():
     pass
 
 def remove_user(username):
-    pass
-
+    """ Supprime l'utilisateur 
+    In : username (str) : username d'un utilisateur inscrit
+    Out :
+        Retourne -1 si l'username est invalide
+        Retourne 0 si l'utilisateur a bien été supprimé
+    """
+    if type(username) != str :
+        return -1 # Username invalide car pas str
+    else :
+        query = f"""
+        SELECT name FROM USERS
+        WHERE username = '{username}';
+        """
+        if _execute(query) == [] :
+            return -1 # Username invalide car non inscrit
+        else :
+            query = f"""
+            DELETE FROM USERS 
+            WHERE username = '{username}';
+            """
+            _execute(query)
+            return 0
 
 def add_friend():
     pass
@@ -72,4 +95,9 @@ def create_group():
 
 
 if __name__ == '__main__':
-    assert 1 == 1
+    # Tests pour remove_user() :
+    _update_db('test.sql')
+    assert remove_user(1) == -1
+    assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
+    
+    assert remove_user('JexisteDeja') == 0
