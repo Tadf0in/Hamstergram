@@ -1,4 +1,25 @@
-L'api est une api de messagerie pour réseau social. Elle integrera des fonctions pour créer un utilisateur, ajouter des amis, creer des groupes ...
+ITERATION 1 :    
+    1) L'api est une api de messagerie pour réseau social. Elle integrera des fonctions pour créer un utilisateur, ajouter des amis, creer des groupes ...
 
-Nino : fonction create_user() pour ajouter un utilisateur
-Louis : fonction add_friend() pour ajouter un ami
+    2) Creation schéma relationnel de l'api
+
+    3) Creation du fichier .sql initialisant la BDD
+
+    4) Nino : specs pour create_user()
+       Louis : specs pour remove_user()
+
+    5) Nino : tests pour create_user()  EN COURS
+       Louis : tests pour remove_user()
+
+    6) Nino : écriture de create_user() pour ajouter un utilisateur
+       Louis : écriture de remove_user() pour supprimer un utilisateur
+
+    ==========================================================
+    Creation de fonction _execute() pour simplifier le code. 
+    ==========================================================
+
+    7) Passage des tests : réussi
+
+    8) Push des différentes branches dans github
+
+

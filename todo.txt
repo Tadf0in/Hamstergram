@@ -1,4 +1,4 @@
-ajouter un utilisateur
+ajouter un utilisateur ✓
 supprimer un utilisateur ✓
 
 ajouter un ami
@@ -9,4 +9,4 @@ discuter entre 2 utilisateurs
 démarrer une discussion de groupe
 envoyer un message dans un groupe
 
-update iterations.txt
+update iterations.txt ✓ (to do with each new iteration)
