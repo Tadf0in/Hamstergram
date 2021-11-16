@@ -131,7 +131,7 @@ def _list_users():
     Retourne la liste de tous les utilisateurs
     """
     query = f"""
-    SELECT * FROM USERS
+    SELECT * FROM USERS;
     """
     return (_execute(query))
 
