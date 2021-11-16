@@ -73,7 +73,7 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
         Retourne -1 si il y a une erreur
         Retourne 0 si l'utilisateur a bien été supprimé 
     """
-    if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str):
+    if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str) or not isinstance(bio, str):
         return -1  # si jamais le type n'es pas bon, on renvoie une erreur
 
     query = f"""
@@ -145,32 +145,34 @@ def create_group():
     pass
 
 if __name__ == '__main__':
-    _update_db(_creer_connexion('test/test.db'), 'test/test.sql')
-    
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
-    # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur
-    assert add_user(1, 1, 1, 1) == -1 
-    # On vérifie que la table USERS n'a donc pas été modifiée
+    # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur et que la table USERS n'a pas été modifiée
+    assert add_user(1, 1, 1, 1) == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
-    # On vérifie qu'essayer d'entrer un utilisateur avec un nom d'utilisateur déjà existant renvoie une erreur
+    # On vérifie qu'essayer d'entrer un utilisateur avec un nom d'utilisateur déjà existant renvoie une erreur et que que la table USERS n'a pas été modifiée
     assert add_user('JexisteDeja', 'eoiokdeo', 'pasmoi@mail.fr', 'deded') == -1
-    # On vérifie que la table USERS n'a donc pas été modifiée
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
-    # On vérifie qu'essayer d'entrer un utilisateur dont l'adresse email est déjà utilisée renvoie une erreur
+    # On vérifie qu'essayer d'entrer un utilisateur dont l'adresse email est déjà utilisée renvoie une erreur et que la table USERS n'a donc pas été modifiée
     assert add_user('JexistePas', 'MoiOnSenFiche', 'existe.deja@mail.fr', 'MoiAussiOnSenFiche', None) == -1
-    # On vérifie que la table USERS n'a donc pas été modifiée
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
-    # On vérifie qu'ajouter un utilisateur donc l'adresse email et le nom d'utilisateur n'existent pas ne renvoie pas d'erreur
-    assert add_user('JeNexistePas', 'dedede', 'moinonplus@gmail.com', 'azerty') == 0
-    # On vérifie que la table USERS a été modifiée en conséquent
+    # On vérifie qu'ajouter un utilisateur donc l'adresse email et le nom d'utilisateur n'existent pas ne renvoie pas d'erreur et  que la table USERS a été modifiée en conséquent
+    assert add_user('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                             ('JeNexistePas', 'dedede', 'moinonplus@gmail.com', 'azerty', None)]
+                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     print('Tests passés pour add_user')
 
     # Tests pour remove_user() :
+    # On vérifie que passer un argument de mauvais type renvoie une erreur et ne modifie pas la table USERS
     assert remove_user(1) == -1
-    assert remove_user('JeNexistePas') == 0 # JeNexistePas n'est pas présent dans la bdd
-    assert remove_user('JexisteDeja') == 0
+    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+    # On vérifie que supprimer un utilisateur inexistant renvoie une erreur et ne modifie pas la table USERS
+    assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
+    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+    # On vérifie que supprimer un utilisateur existant ne renvoie pas d'erreur et modifie bien la table USERS
+    assert remove_user('NouvelUtilisateur') == 0
+    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     print("Tests passés pour remove_user")
