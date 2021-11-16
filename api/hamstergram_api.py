@@ -7,7 +7,9 @@ GitHub : https://github.com/Tadf0in/Hamstergram
 import sqlite3
 
 if __name__ == '__main__':
-    testing = True
+    TESTING = True
+else :
+    TESTING = False
 
 def _creer_connexion(db_file):
     """ Crée une connexion à la base de données SQLite spécifiée par db_file.
@@ -45,17 +47,20 @@ def _update_db(db, sql_file):
     # commit des modifications
     db.commit()
 
-def _execute(query):
+def _execute(query, values=None):
     """
     Exécute la requête dans la bdd
     In : query (str) : requête sql
     """
-    if testing :
+    if TESTING :
         db = _creer_connexion('test/test.db')
     else :
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
-    cur.execute(query)
+    if values == None :
+        cur.execute(query)
+    else :
+        cur.execute(query, values)
     response = cur.fetchall()
     db.commit()
     db.close()
@@ -78,23 +83,23 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
 
     query = f"""
         SELECT name FROM USERS
-        WHERE username = '{username}';
+        WHERE username = ?;
         """
-    if _execute(query) == [] :  # On vérifie que le nom d'utilisateur n'existe pas déjà
+    if _execute(query, (username,)) == [] :  # On vérifie que le nom d'utilisateur n'existe pas déjà
         query = f"""
         SELECT name FROM USERS
-        WHERE mail = '{mail}';
+        WHERE mail = ?;
         """
-        if _execute(query) == []:  # si il n'existe pas, on vérifie que l'email n'existe pas déjà
+        if _execute(query, (mail,)) == []:  # si il n'existe pas, on vérifie que l'email n'existe pas déjà
             query = f"""INSERT INTO USERS(username, name, mail, password) 
-                    VALUES ('{username}', '{name}', '{mail}', '{password}'"""
+                    VALUES (?, ?, ?, ?"""
 
             if bio != "":
-                query += f',{bio});'
+                query += f',?);'
+                _execute(query, (username, name, mail, password, bio,))
             else:
                 query += ');'
-        
-            _execute(query)
+                _execute(query, (username, name, mail, password,))
 
             return 0  # Pas d'erreur, on renvoie 0
         else:
@@ -114,16 +119,16 @@ def remove_user(username):
     else :
         query = f"""
         SELECT name FROM USERS
-        WHERE username = '{username}';
+        WHERE username = ?;
         """
-        if _execute(query) == [] :
+        if _execute(query, (username,)) == [] :
             return -1 # Username invalide car non inscrit
         else :
             query = f"""
             DELETE FROM USERS 
-            WHERE username = '{username}';
+            WHERE username = ?;
             """
-            _execute(query)
+            _execute(query, (username,))
             return 0
 
 def _list_users():
