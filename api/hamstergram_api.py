@@ -138,6 +138,9 @@ def _list_users():
 def add_friend():
     pass
 
+def remove_friend(friendUsername):
+    pass
+
 def start_disc():
     pass
 
