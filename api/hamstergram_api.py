@@ -135,49 +135,8 @@ def _list_users():
     """
     return (_execute(query))
 
-def are_friends(user1, user2):
-    """ Vérifie si 2 utilisateurs sont déjà amis
-    In : user1 (str) : Username du 1er utilisateur concerné
-         user2 (str) : Username du 2eme utilisateur concerné
-    Out : (bool) : True = Les 2 utilisateurs sont amis
-                             False = Les 2 utilisateurs ne sont pas amis
-        Retourne -1 si un des username est invalide
-    """
-    if type(user1) != str or type(user2) != str :
-        return -1 # Username invalide car pas str
-    else :
-        query1 = f"""
-        SELECT user_name, friend_name FROM FRIENDS
-        WHERE user_name = '{user1} AND friend_name = '{user2}';
-        """
-        query2 = f"""
-        SELECT user_name, friend_name FROM FRIENDS
-        WHERE user_name = '{user2} AND friend_name = '{user1}';
-        """
-        if _execute(query1) == [] and _execute(query2) == [] :
-            return False
-        else :
-            return True
-
-def add_friend(user_name, friend_name):
-    """ Créer une relation d'amitié entre 2 utilisateurs
-    In : user_name (str) : Username du 1er utilisateur concerné
-         friend_name (str) : Username du 2eme utilisateur concerné
-    Out : 
-        Retourne -1 si un des username est invalide ou si déjà amis
-        Retourne 0 si les utilisateurs ont bien été ajoutés en amis
-    """
-    if type(user_name) != str or type(friend_name) != str :
-        return -1 # Username invalide car pas str
-    elif are_friends() == True :
-        return -1 # Déjà amis
-    else :
-        query = f"""
-        INSERT INTO FRIENDS (user_name, friend_name)
-        VALUES '{user_name}', '{friend_name}'
-        """
-        _execute(query)
-        return 0
+def add_friend():
+    pass
 
 def start_disc():
     pass
