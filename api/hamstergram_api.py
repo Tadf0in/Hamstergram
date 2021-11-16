@@ -146,18 +146,14 @@ def are_friends(user1, user2):
     if type(user1) != str or type(user2) != str :
         return -1 # Username invalide car pas str
     else :
-        query1 = f"""
+        query = f"""
         SELECT user_name, friend_name FROM FRIENDS
-        WHERE user_name = '{user1} AND friend_name = '{user2}';
+        WHERE user_name = ? AND friend_name = ?;
         """
-        query2 = f"""
-        SELECT user_name, friend_name FROM FRIENDS
-        WHERE user_name = '{user2} AND friend_name = '{user1}';
-        """
-        if _execute(query1) == [] and _execute(query2) == [] :
-            return False
+        if _execute(query, (user1, user2)) == [] and _execute(query, (user2, user1)) == [] :
+            return False # Pas amis
         else :
-            return True
+            return True # Amis
 
 def add_friend(user_name, friend_name):
     """ Créer une relation d'amitié entre 2 utilisateurs
@@ -174,9 +170,9 @@ def add_friend(user_name, friend_name):
     else :
         query = f"""
         INSERT INTO FRIENDS (user_name, friend_name)
-        VALUES '{user_name}', '{friend_name}'
+        VALUES ?, ?;
         """
-        _execute(query)
+        _execute(query, (user_name, friend_name))
         return 0
 
 def start_disc():
