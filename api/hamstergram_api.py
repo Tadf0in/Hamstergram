@@ -150,6 +150,7 @@ def are_friends(user1, user2):
     """
     if type(user1) != str or type(user2) != str :
         return -1 # Username invalide car pas str
+    ##### A faire : Vérifier si usernames valides
     else :
         query = f"""
         SELECT user_name, friend_name FROM FRIENDS
@@ -170,8 +171,10 @@ def add_friend(user_name, friend_name):
     """
     if type(user_name) != str or type(friend_name) != str :
         return -1 # Username invalide car pas str
-    elif are_friends() == True :
-        return -1 # Déjà amis
+    elif user_name == friend_name :
+        return -1 # Usernames identiques
+    elif are_friends(user_name, friend_name) == True or are_friends(user_name, friend_name) == -1:
+        return -1 # Déjà amis ou username invalide
     else :
         query = f"""
         INSERT INTO FRIENDS (user_name, friend_name)
@@ -218,3 +221,16 @@ if __name__ == '__main__':
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     print("Tests passés pour remove_user")
+
+    # Tests pour are_friends() :
+    # assert are_friends('JexisteDeja', 'Nino') == True
+    assert are_friends(1, 2) == -1
+    # assert are_friends('JexistePas', 'user2') == False
+
+    # Tests pour add_friends() :
+    assert add_friend(1, 2) == -1
+    # assert add_friend('JexisteDeja', 'JexisteDeja') == -1 # Usernames identiques
+    # assert add_friend('JexistePas', 'friend_name') == -1 # Un des usernames invalide
+    # assert add_friend('user_name', 'JexistePas') == -1 # Un des usernames invalide
+    # assert add_friend('JexisteDeja', 'Nino') == -1 # Déjà amis
+    # assert add_friend('JexisteDeja', 'JaiPasDamis') == 0
