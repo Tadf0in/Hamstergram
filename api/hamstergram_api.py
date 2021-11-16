@@ -51,7 +51,7 @@ def _execute(query):
     In : query (str) : requête sql
     """
     if testing :
-        db = _creer_connexion('test/test.db')
+        db = _creer_connexion('test.db')
     else :
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
@@ -164,6 +164,38 @@ def list_friends(username):
     return (_execute(query, (username,)))
 
 if __name__ == '__main__':
+    from os import remove
+    import time
+
+    # Creation d'une BDD temporaire pour les tests
+    testDb_file = open('test.db', 'x')
+    testDb_file.close()
+
+    # Creation des relations dans la base de données:
+    _execute(""" CREATE TABLE "USERS" (
+            "username" TEXT  NOT NULL ,
+            "name" TEXT  NOT NULL ,
+            "mail" TEXT  NOT NULL ,
+            "password" TEXT  NOT NULL ,
+            "bio" TEXT  NULL ,
+            CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
+            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail")
+        )
+
+        CREATE TABLE "FRIENDS" (
+            "user_name" TEXT  NOT NULL ,
+            "friend_name" TEXT  NOT NULL ,
+            CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
+        )
+    """)
+
+    # On ajoutes des données dans les relations
+    _execute("""
+    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'),
+                                                              ('ninobg74', 'Nino Faust', 'faust.nino@hotmail.fr', 'jaimelansimaischut*');
+    INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg47')
+    """)
+
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
@@ -197,10 +229,12 @@ if __name__ == '__main__':
     print("Tests passés pour remove_user")
 
 
-    #_update_db(_creer_connexion('test/test.db'), 'test/test.sql')
-
-    # # Tests de remove_friend():
-    # assert list_friends('JexisteDeja') == 
-    # # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
+    # Tests de remove_friend():
+    #assert list_friends('JexisteDeja') == 
+    # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     # assert remove_friend(1) == -1
     # assert list_friends()
+
+    # On supprime la BDD temporaire
+    time.sleep(10)
+    remove('test.db')
