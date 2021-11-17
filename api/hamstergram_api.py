@@ -136,9 +136,10 @@ def add_friend():
     pass
 
 
-def remove_friend(friendUsername : str):
+def remove_friend(username : str, friendUsername : str):
     """ La fonction supprime un ami
-    In : nom de l'ami en question
+    In : username = nom de l'utilisateur qui souhaite supprimer un ami
+        friendUsername : nom de l'ami en question
     Out :
         Retourne -1 si l'username est invalide
         Retourne 0 si l'ami a bien été supprimé
@@ -237,12 +238,21 @@ if __name__ == '__main__':
     print("Tests passés pour remove_user")
 
 
-    # Tests de remove_friend():
-    #assert list_friends('JexisteDeja') == 
-    # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
-    # assert remove_friend(1) == -1
-    # assert list_friends()
-    # aaaa
+    # # Tests de remove_friend():
+    # # On teste list_friends
+    # assert list_friends('JexisteDeja') == [('ninobg74')]
+    # # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
+    # assert remove_friend(1, 1) == -1
+    # assert list_friends('JexisteDeja') == [('ninobg74')]
+    # # On vérifie que si on tente de supprimer un ami que l'on a pas, la fonction renvoie une erreur et la liste d'amis n'es pas modifiée
+    # assert remove_friend('JexisteDeja', 'loulou74490') == -1
+    # assert list_friends('JexisteDeja') == [('ninobg74')]
+    # # On vérifie que si on tente de supprimer un ami de qqn qui n'existe pas, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
+    # assert remove_friend('JeNexistePas', 'ninobg74') == -1
+    # assert list_friends('JexisteDeja') == [('ninobg74')]
+    # # On vérifie que si on supprime un ami, la fonction ne renvoie pas d'erreur et la liste d'amis est modifiée en conséquent
+    # assert remove_friend('JexisteDeja', 'ninobg74') == 0
+    # assert list_friends('JexisteDeja') == []
 
     # On supprime la BDD temporaire
     remove('test.db')
