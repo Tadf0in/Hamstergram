@@ -58,9 +58,9 @@ def _execute(query, values=None):
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
     if values == None :
-        cur.executescript(query)
+        cur.execute(query)
     else :
-        cur.executescript(query, values)
+        cur.execute(query, values)
     response = cur.fetchall()
     db.commit()
     db.close()
@@ -178,9 +178,9 @@ if __name__ == '__main__':
     testDb_file = open('test.db', 'x')
     testDb_file.close()
 
-    # Creation des relations dans la base de données:
-
-    query = """CREATE TABLE "USERS" (
+    # Creation des relations dans la base de données: (On est obligés de le faire en deux fois avec 
+    # la methode execute de sqlite 3)
+    create_table_users = """CREATE TABLE "USERS" (
             "username" TEXT  NOT NULL ,
             "name" TEXT  NOT NULL ,
             "mail" TEXT  NOT NULL ,
@@ -188,25 +188,24 @@ if __name__ == '__main__':
             "bio" TEXT  NULL ,
             CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
             CONSTRAINT "uk_USERS_mail" UNIQUE ("mail"));
-
-            CREATE TABLE FRIENDS (
+    """
+    create_table_friends ="""CREATE TABLE FRIENDS (
             "user_name" TEXT  NOT NULL ,
             "friend_name" TEXT  NOT NULL ,
             CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
         )
     """
-    _execute(query)
+    _execute(create_table_users)
+    _execute(create_table_friends)
 
     # On ajoutes des données dans les relations
     _execute("""
-    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'),
-                                                              ('ninobg74', 'Nino Faust', 'faust.nino@hotmail.fr', 'jaimelansimaischut*');
-    INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg47')
+    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123')""")
+    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg47')
     """)
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
-    print(_list_users())
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur et que la table USERS n'a pas été modifiée
     assert add_user(1, 1, 1, 1) == -1
@@ -245,5 +244,4 @@ if __name__ == '__main__':
     # assert list_friends()
 
     # On supprime la BDD temporaire
-    time.sleep(10)
     remove('test.db')
