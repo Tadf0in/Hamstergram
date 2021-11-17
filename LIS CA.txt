@@ -1,0 +1,5 @@
+Yo
+du coup j'ai finalisé remove_friend
+pour ta fonction are_friend, faudra que je l'utilise dedans, mais avant ça faut que tu l'update en
+utilisant list_friend ou frien_list jsplus comment je l'ai appelé
+voilà.
