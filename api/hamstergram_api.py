@@ -137,12 +137,6 @@ def add_friend():
 
 
 def remove_friend(friendUsername : str):
-    """ La fonction supprime un ami
-    In : nom de l'ami en question
-    Out :
-        Retourne -1 si l'username est invalide
-        Retourne 0 si l'ami a bien été supprimé
-    """
     pass
 
 def start_disc():
@@ -235,13 +229,6 @@ if __name__ == '__main__':
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     print("Tests passés pour remove_user")
-
-
-    # Tests de remove_friend():
-    #assert list_friends('JexisteDeja') == 
-    # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
-    # assert remove_friend(1) == -1
-    # assert list_friends()
 
     # On supprime la BDD temporaire
     remove('test.db')
