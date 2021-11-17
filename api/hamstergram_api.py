@@ -53,7 +53,7 @@ def _execute(query, values=None):
     In : query (str) : requête sql
     """
     if TESTING :
-        db = _creer_connexion('test/test.db')
+        db = _creer_connexion('test.db')
     else :
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
@@ -131,58 +131,19 @@ def remove_user(username):
             _execute(query, (username,))
             return 0
 
-def _list_users():
-    """
-    Retourne la liste de tous les utilisateurs
-    """
-    query = f"""
-    SELECT * FROM USERS
-    """
-    return (_execute(query))
 
-def are_friends(user1, user2):
-    """ Vérifie si 2 utilisateurs sont déjà amis
-    In : user1 (str) : Username du 1er utilisateur concerné
-         user2 (str) : Username du 2eme utilisateur concerné
-    Out : (bool) : True = Les 2 utilisateurs sont amis
-                             False = Les 2 utilisateurs ne sont pas amis
-        Retourne -1 si un des username est invalide
-    """
-    if type(user1) != str or type(user2) != str :
-        return -1 # Username invalide car pas str
-    else :
-        query1 = f"""
-        SELECT user_name, friend_name FROM FRIENDS
-        WHERE user_name = '{user1} AND friend_name = '{user2}';
-        """
-        query2 = f"""
-        SELECT user_name, friend_name FROM FRIENDS
-        WHERE user_name = '{user2} AND friend_name = '{user1}';
-        """
-        if _execute(query1) == [] and _execute(query2) == [] :
-            return False
-        else :
-            return True
+def add_friend():
+    pass
 
-def add_friend(user_name, friend_name):
-    """ Créer une relation d'amitié entre 2 utilisateurs
-    In : user_name (str) : Username du 1er utilisateur concerné
-         friend_name (str) : Username du 2eme utilisateur concerné
-    Out : 
-        Retourne -1 si un des username est invalide ou si déjà amis
-        Retourne 0 si les utilisateurs ont bien été ajoutés en amis
+
+def remove_friend(friendUsername : str):
+    """ La fonction supprime un ami
+    In : nom de l'ami en question
+    Out :
+        Retourne -1 si l'username est invalide
+        Retourne 0 si l'ami a bien été supprimé
     """
-    if type(user_name) != str or type(friend_name) != str :
-        return -1 # Username invalide car pas str
-    elif are_friends() == True :
-        return -1 # Déjà amis
-    else :
-        query = f"""
-        INSERT INTO FRIENDS (user_name, friend_name)
-        VALUES '{user_name}', '{friend_name}'
-        """
-        _execute(query)
-        return 0
+    pass
 
 def start_disc():
     pass
@@ -190,7 +151,58 @@ def start_disc():
 def create_group():
     pass
 
+def _list_users():
+    """ determine ce que contient la table USERS
+    Out : liste de tous les utilisateurs et de leurs informations
+    """
+    query = f"""
+    SELECT * FROM USERS
+    """
+    return (_execute(query))
+
+def list_friends(username):
+    """ determine les amis d'un utilisateur
+    Out : liste des amis d'un utilisateur
+    """
+    query = f"""
+    SELECT friend_name FROM FRIENDS
+    WHERE user_name = '?'
+    """
+    return (_execute(query, (username,)))
+
 if __name__ == '__main__':
+    from os import remove
+    import time
+
+    # Creation d'une BDD temporaire pour les tests
+    testDb_file = open('test.db', 'x')
+    testDb_file.close()
+
+    # Creation des relations dans la base de données:
+    _execute(""" CREATE TABLE "USERS" (
+            "username" TEXT  NOT NULL ,
+            "name" TEXT  NOT NULL ,
+            "mail" TEXT  NOT NULL ,
+            "password" TEXT  NOT NULL ,
+            "bio" TEXT  NULL ,
+            CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
+            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail")
+        )
+
+        CREATE TABLE "FRIENDS" (
+            "user_name" TEXT  NOT NULL ,
+            "friend_name" TEXT  NOT NULL ,
+            CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
+        )
+    """)
+
+    # On ajoutes des données dans les relations
+    _execute("""
+    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'),
+                                                              ('ninobg74', 'Nino Faust', 'faust.nino@hotmail.fr', 'jaimelansimaischut*');
+    INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg47')
+    """)
+
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
@@ -222,3 +234,14 @@ if __name__ == '__main__':
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     print("Tests passés pour remove_user")
+
+
+    # Tests de remove_friend():
+    #assert list_friends('JexisteDeja') == 
+    # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
+    # assert remove_friend(1) == -1
+    # assert list_friends()
+
+    # On supprime la BDD temporaire
+    time.sleep(10)
+    remove('test.db')
