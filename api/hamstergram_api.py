@@ -242,6 +242,7 @@ if __name__ == '__main__':
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     # assert remove_friend(1) == -1
     # assert list_friends()
+    # aaaa
 
     # On supprime la BDD temporaire
     remove('test.db')
