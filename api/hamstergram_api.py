@@ -58,9 +58,9 @@ def _execute(query, values=None):
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
     if values == None :
-        cur.execute(query)
+        cur.executescript(query)
     else :
-        cur.execute(query, values)
+        cur.executescript(query, values)
     response = cur.fetchall()
     db.commit()
     db.close()
@@ -179,22 +179,23 @@ if __name__ == '__main__':
     testDb_file.close()
 
     # Creation des relations dans la base de données:
-    _execute(""" CREATE TABLE "USERS" (
+
+    query = """CREATE TABLE "USERS" (
             "username" TEXT  NOT NULL ,
             "name" TEXT  NOT NULL ,
             "mail" TEXT  NOT NULL ,
             "password" TEXT  NOT NULL ,
             "bio" TEXT  NULL ,
             CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
-            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail")
-        )
+            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail"));
 
-        CREATE TABLE "FRIENDS" (
+            CREATE TABLE FRIENDS (
             "user_name" TEXT  NOT NULL ,
             "friend_name" TEXT  NOT NULL ,
             CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
         )
-    """)
+    """
+    _execute(query)
 
     # On ajoutes des données dans les relations
     _execute("""
@@ -205,6 +206,7 @@ if __name__ == '__main__':
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
+    print(_list_users())
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur et que la table USERS n'a pas été modifiée
     assert add_user(1, 1, 1, 1) == -1
@@ -218,18 +220,18 @@ if __name__ == '__main__':
     # On vérifie qu'ajouter un utilisateur donc l'adresse email et le nom d'utilisateur n'existent pas ne renvoie pas d'erreur et  que la table USERS a été modifiée en conséquent
     assert add_user('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+                            ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     print('Tests passés pour add_user')
 
     # Tests pour remove_user() :
     # On vérifie que passer un argument de mauvais type renvoie une erreur et ne modifie pas la table USERS
     assert remove_user(1) == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+                            ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur inexistant renvoie une erreur et ne modifie pas la table USERS
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+                            ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur existant ne renvoie pas d'erreur et modifie bien la table USERS
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
