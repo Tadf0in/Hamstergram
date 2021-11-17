@@ -144,6 +144,30 @@ def remove_friend(username : str, friendUsername : str):
         Retourne -1 si l'username est invalide
         Retourne 0 si l'ami a bien été supprimé
     """
+    # Si les arguments ne sont pas du bon type, on renvoie une erreur
+    if not isinstance(username, str) or not isinstance(friendUsername, str):
+        return -1
+
+    # On vérifie que l'utilisateur existe et que l'ami a supprime est dans la liste d'amis
+    user_exists = False
+    for user in _list_users():
+        if user[0] == username:
+            user_exists = True
+            break
+    is_friend = False
+    for user in list_friends(username):
+        if user == friendUsername:
+            is_friend = True
+            break
+    # si l'utilisateur n'existe pas ou que l'autre utilisateur n'est pas notre ami, on renvoie une erreur
+    if not user_exists or not is_friend:
+        return -1
+
+    # si toutes les conditions sont passées, on supprime l'ami et on renvoie 0
+    query = """DELETE FROM FRIENDS WHERE user_name='?' AND friend_name='?'"""
+    _execute(query, (username, friendUsername))
+    return 0
+    
     pass
 
 def start_disc():
@@ -169,7 +193,7 @@ def list_friends(username):
     SELECT friend_name FROM FRIENDS
     WHERE user_name = '?'
     """
-    return (_execute(query, (username,)))
+    return (_execute(query, (username)))
 
 if __name__ == '__main__':
     from os import remove
@@ -238,21 +262,23 @@ if __name__ == '__main__':
     print("Tests passés pour remove_user")
 
 
-    # # Tests de remove_friend():
-    # # On teste list_friends
-    # assert list_friends('JexisteDeja') == [('ninobg74')]
-    # # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
-    # assert remove_friend(1, 1) == -1
-    # assert list_friends('JexisteDeja') == [('ninobg74')]
-    # # On vérifie que si on tente de supprimer un ami que l'on a pas, la fonction renvoie une erreur et la liste d'amis n'es pas modifiée
-    # assert remove_friend('JexisteDeja', 'loulou74490') == -1
-    # assert list_friends('JexisteDeja') == [('ninobg74')]
-    # # On vérifie que si on tente de supprimer un ami de qqn qui n'existe pas, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
-    # assert remove_friend('JeNexistePas', 'ninobg74') == -1
-    # assert list_friends('JexisteDeja') == [('ninobg74')]
-    # # On vérifie que si on supprime un ami, la fonction ne renvoie pas d'erreur et la liste d'amis est modifiée en conséquent
-    # assert remove_friend('JexisteDeja', 'ninobg74') == 0
-    # assert list_friends('JexisteDeja') == []
+    # Tests de remove_friend():
+    # On teste list_friends
+    assert list_friends('JexisteDeja') == [('ninobg74')]
+    # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
+    assert remove_friend(1, 1) == -1
+    assert list_friends('JexisteDeja') == [('ninobg74')]
+    # On vérifie que si on tente de supprimer un ami que l'on a pas, la fonction renvoie une erreur et la liste d'amis n'es pas modifiée
+    assert remove_friend('JexisteDeja', 'loulou74490') == -1
+    assert list_friends('JexisteDeja') == [('ninobg74')]
+    # On vérifie que si on tente de supprimer un ami de qqn qui n'existe pas, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
+    assert remove_friend('JeNexistePas', 'ninobg74') == -1
+    assert list_friends('JexisteDeja') == [('ninobg74')]
+    # On vérifie que si on supprime un ami, la fonction ne renvoie pas d'erreur et la liste d'amis est modifiée en conséquent
+    assert remove_friend('JexisteDeja', 'ninobg74') == 0
+    assert list_friends('JexisteDeja') == []
+    print("Tests passés pour remover_friend")
 
     # On supprime la BDD temporaire
+    time.sleep(10)
     remove('test.db')
