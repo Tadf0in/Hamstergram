@@ -150,9 +150,14 @@ def are_friends(user1, user2):
     """
     if type(user1) != str or type(user2) != str :
         return -1 # Username invalide car pas str
-    ##### A faire : Vérifier si usernames valides
+    query = """
+    SELECT name FROM USERS
+    WHERE username = ?;
+    """
+    if _execute(query, (user1,)) == [] or _execute(query, (user2,)) == [] :
+        return -1 # Un des usernames est invalide
     else :
-        query = f"""
+        query = """
         SELECT user_name, friend_name FROM FRIENDS
         WHERE user_name = ? AND friend_name = ?;
         """
@@ -176,7 +181,7 @@ def add_friend(user_name, friend_name):
     elif are_friends(user_name, friend_name) == True or are_friends(user_name, friend_name) == -1:
         return -1 # Déjà amis ou username invalide
     else :
-        query = f"""
+        query = """
         INSERT INTO FRIENDS (user_name, friend_name)
         VALUES ?, ?;
         """
