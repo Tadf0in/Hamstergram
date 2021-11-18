@@ -150,15 +150,55 @@ def _list_users():
     Out : liste de tous les utilisateurs et de leurs informations
     """
     query = f"""
-    SELECT * FROM USERS
+    SELECT * FROM USERS;
     """
     return (_execute(query))
 
+def are_friends(user1, user2):
+    """ Vérifie si 2 utilisateurs sont déjà amis
+    In : user1 (str) : Username du 1er utilisateur concerné
+         user2 (str) : Username du 2eme utilisateur concerné
+    Out : (bool) : True = Les 2 utilisateurs sont amis
+                             False = Les 2 utilisateurs ne sont pas amis
+        Retourne -1 si un des username est invalide
+    """
+    if type(user1) != str or type(user2) != str :
+        return -1 # Username invalide car pas str
+    query = """
+    SELECT name FROM USERS
+    WHERE username = ?;
+    """
+    if _execute(query, (user1,)) == [] or _execute(query, (user2,)) == [] :
+        return -1 # Un des usernames est invalide
+    else :
+        query = """
+        SELECT user_name, friend_name FROM FRIENDS
+        WHERE user_name = ? AND friend_name = ?;
+        """
+        if _execute(query, (user1, user2)) == [] and _execute(query, (user2, user1)) == [] :
+            return False # Pas amis
+        else :
+            return True # Amis
 
-def list_friends(username):
+def add_friends(user_name, friend_name):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
     """
+    if type(user_name) != str or type(friend_name) != str :
+        return -1 # Username invalide car pas str
+    elif user_name == friend_name :
+        return -1 # Usernames identiques
+    elif are_friends(user_name, friend_name) == True or are_friends(user_name, friend_name) == -1:
+        return -1 # Déjà amis ou username invalide
+    else :
+        query = """
+        INSERT INTO FRIENDS (user_name, friend_name)
+        VALUES ?, ?;
+        """
+        _execute(query, (user_name, friend_name))
+        return 0
+
+def list_friends(username):
     query = f"""
     SELECT friend_name FROM FRIENDS
     WHERE user_name = '?'
@@ -230,6 +270,19 @@ if __name__ == '__main__':
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     print("Tests passés pour remove_user")
+
+    # Tests pour are_friends() :
+    # assert are_friends('JexisteDeja', 'Nino') == True
+    assert are_friends(1, 2) == -1
+    # assert are_friends('JexistePas', 'user2') == False
+
+    # Tests pour add_friends() :
+    assert add_friend(1, 2) == -1
+    # assert add_friend('JexisteDeja', 'JexisteDeja') == -1 # Usernames identiques
+    # assert add_friend('JexistePas', 'friend_name') == -1 # Un des usernames invalide
+    # assert add_friend('user_name', 'JexistePas') == -1 # Un des usernames invalide
+    # assert add_friend('JexisteDeja', 'Nino') == -1 # Déjà amis
+    # assert add_friend('JexisteDeja', 'JaiPasDamis') == 0
 
     # On supprime la BDD temporaire
     remove('test.db')

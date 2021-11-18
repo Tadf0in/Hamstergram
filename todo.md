@@ -3,8 +3,10 @@
 
 <br>
 
-- [ ] Ajouter un ami
+- [X] Vérifier si amis ou pas
+- [X] Ajouter un ami
 - [ ] Supprimer un ami
+- [X] Voir liste d'amis
 
 <br>
 
