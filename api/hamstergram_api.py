@@ -53,11 +53,7 @@ def _execute(query, values=None):
     In : query (str) : requête sql
     """
     if TESTING :
-<<<<<<< HEAD
-        db = _creer_connexion('test/test.db')
-=======
         db = _creer_connexion('test.db')
->>>>>>> ed8fbb6086a0647d0107354d25ba0530a74803be
     else :
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
@@ -158,7 +154,6 @@ def _list_users():
     """
     return (_execute(query))
 
-<<<<<<< HEAD
 def are_friends(user1, user2):
     """ Vérifie si 2 utilisateurs sont déjà amis
     In : user1 (str) : Username du 1er utilisateur concerné
@@ -184,14 +179,11 @@ def are_friends(user1, user2):
             return False # Pas amis
         else :
             return True # Amis
-=======
->>>>>>> ed8fbb6086a0647d0107354d25ba0530a74803be
 
-def list_friends(username):
+def add_friends(user_name, friend_name):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
     """
-<<<<<<< HEAD
     if type(user_name) != str or type(friend_name) != str :
         return -1 # Username invalide car pas str
     elif user_name == friend_name :
@@ -206,9 +198,7 @@ def list_friends(username):
         _execute(query, (user_name, friend_name))
         return 0
 
-def start_disc():
-    pass
-=======
+def list_friends(username):
     query = f"""
     SELECT friend_name FROM FRIENDS
     WHERE user_name = '?'
@@ -242,7 +232,6 @@ if __name__ == '__main__':
     """
     _execute(create_table_users)
     _execute(create_table_friends)
->>>>>>> ed8fbb6086a0647d0107354d25ba0530a74803be
 
     # On ajoutes des données dans les relations
     _execute("""
@@ -282,7 +271,6 @@ if __name__ == '__main__':
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     print("Tests passés pour remove_user")
 
-<<<<<<< HEAD
     # Tests pour are_friends() :
     # assert are_friends('JexisteDeja', 'Nino') == True
     assert are_friends(1, 2) == -1
@@ -295,7 +283,6 @@ if __name__ == '__main__':
     # assert add_friend('user_name', 'JexistePas') == -1 # Un des usernames invalide
     # assert add_friend('JexisteDeja', 'Nino') == -1 # Déjà amis
     # assert add_friend('JexisteDeja', 'JaiPasDamis') == 0
-=======
+
     # On supprime la BDD temporaire
     remove('test.db')
->>>>>>> ed8fbb6086a0647d0107354d25ba0530a74803be
