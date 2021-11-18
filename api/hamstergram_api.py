@@ -53,7 +53,7 @@ def _execute(query, values=None):
     In : query (str) : requête sql
     """
     if TESTING :
-        db = _creer_connexion('test/test.db')
+        db = _creer_connexion('test.db')
     else :
         db = _creer_connexion('hamstergram.db')
     cur = db.cursor()
@@ -131,16 +131,12 @@ def remove_user(username):
             _execute(query, (username,))
             return 0
 
-def _list_users():
-    """
-    Retourne la liste de tous les utilisateurs
-    """
-    query = f"""
-    SELECT * FROM USERS
-    """
-    return (_execute(query))
 
 def add_friend():
+    pass
+
+
+def remove_friend(friendUsername : str):
     pass
 
 def start_disc():
@@ -149,7 +145,64 @@ def start_disc():
 def create_group():
     pass
 
+def _list_users():
+    """ determine ce que contient la table USERS
+    Out : liste de tous les utilisateurs et de leurs informations
+    """
+    query = f"""
+    SELECT * FROM USERS
+    """
+    return (_execute(query))
+
+<<<<<<< HEAD
+def add_friend():
+    pass
+=======
+def list_friends(username):
+    """ determine les amis d'un utilisateur
+    Out : liste des amis d'un utilisateur
+    """
+    query = f"""
+    SELECT friend_name FROM FRIENDS
+    WHERE user_name = '?'
+    """
+    return (_execute(query, (username,)))
+>>>>>>> a002a1d790c4d787654730e25fa96571711af07a
+
 if __name__ == '__main__':
+    from os import remove
+    import time
+
+    # Creation d'une BDD temporaire pour les tests
+    testDb_file = open('test.db', 'x')
+    testDb_file.close()
+
+    # Creation des relations dans la base de données: (On est obligés de le faire en deux fois avec 
+    # la methode execute de sqlite 3)
+    create_table_users = """CREATE TABLE "USERS" (
+            "username" TEXT  NOT NULL ,
+            "name" TEXT  NOT NULL ,
+            "mail" TEXT  NOT NULL ,
+            "password" TEXT  NOT NULL ,
+            "bio" TEXT  NULL ,
+            CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
+            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail"));
+    """
+    create_table_friends ="""CREATE TABLE FRIENDS (
+            "user_name" TEXT  NOT NULL ,
+            "friend_name" TEXT  NOT NULL ,
+            CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
+        )
+    """
+    _execute(create_table_users)
+    _execute(create_table_friends)
+
+    # On ajoutes des données dans les relations
+    _execute("""
+    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123')""")
+    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg47')
+    """)
+
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
@@ -165,19 +218,22 @@ if __name__ == '__main__':
     # On vérifie qu'ajouter un utilisateur donc l'adresse email et le nom d'utilisateur n'existent pas ne renvoie pas d'erreur et  que la table USERS a été modifiée en conséquent
     assert add_user('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+                            ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     print('Tests passés pour add_user')
 
     # Tests pour remove_user() :
     # On vérifie que passer un argument de mauvais type renvoie une erreur et ne modifie pas la table USERS
     assert remove_user(1) == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+                            ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur inexistant renvoie une erreur et ne modifie pas la table USERS
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
+                            ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur existant ne renvoie pas d'erreur et modifie bien la table USERS
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     print("Tests passés pour remove_user")
+
+    # On supprime la BDD temporaire
+    remove('test.db')
