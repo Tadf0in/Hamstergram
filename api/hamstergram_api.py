@@ -156,11 +156,14 @@ def remove_friend(username : str, friendUsername : str):
             break
     is_friend = False
     for user in list_friends(username):
+        print(user, friendUsername)  # faire boucle for avec i
         if user == friendUsername:
             is_friend = True
             break
+    print(user_exists, is_friend)
     # si l'utilisateur n'existe pas ou que l'autre utilisateur n'est pas notre ami, on renvoie une erreur
     if not user_exists or not is_friend:
+        print("jesuilalol")
         return -1
 
     # si toutes les conditions sont passées, on supprime l'ami et on renvoie 0
@@ -191,9 +194,9 @@ def list_friends(username):
     """
     query = f"""
     SELECT friend_name FROM FRIENDS
-    WHERE user_name = '?'
+    WHERE user_name = '{username}'
     """
-    return (_execute(query, (username)))
+    return (_execute(query))
 
 if __name__ == '__main__':
     from os import remove
@@ -226,7 +229,7 @@ if __name__ == '__main__':
     # On ajoutes des données dans les relations
     _execute("""
     INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123')""")
-    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg47')
+    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg74')
     """)
 
     # Tests pour add_user() :
@@ -263,18 +266,20 @@ if __name__ == '__main__':
 
 
     # Tests de remove_friend():
+
     # On teste list_friends
-    assert list_friends('JexisteDeja') == [('ninobg74')]
+    assert list_friends('JexisteDeja') == [('ninobg74',)]
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
-    assert list_friends('JexisteDeja') == [('ninobg74')]
+    assert list_friends('JexisteDeja') == [('ninobg74',)]
     # On vérifie que si on tente de supprimer un ami que l'on a pas, la fonction renvoie une erreur et la liste d'amis n'es pas modifiée
     assert remove_friend('JexisteDeja', 'loulou74490') == -1
-    assert list_friends('JexisteDeja') == [('ninobg74')]
+    assert list_friends('JexisteDeja') == [('ninobg74',)]
     # On vérifie que si on tente de supprimer un ami de qqn qui n'existe pas, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend('JeNexistePas', 'ninobg74') == -1
-    assert list_friends('JexisteDeja') == [('ninobg74')]
+    assert list_friends('JexisteDeja') == [('ninobg74',)]
     # On vérifie que si on supprime un ami, la fonction ne renvoie pas d'erreur et la liste d'amis est modifiée en conséquent
+    print(remove_friend('JexisteDeja', 'loulou74490'))
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == []
     print("Tests passés pour remover_friend")
