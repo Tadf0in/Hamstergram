@@ -131,20 +131,6 @@ def remove_user(username):
             _execute(query, (username,))
             return 0
 
-
-def add_friend():
-    pass
-
-
-def remove_friend(friendUsername : str):
-    pass
-
-def start_disc():
-    pass
-
-def create_group():
-    pass
-
 def _list_users():
     """ determine ce que contient la table USERS
     Out : liste de tous les utilisateurs et de leurs informations
@@ -204,6 +190,15 @@ def list_friends(username):
     WHERE user_name = '?'
     """
     return (_execute(query, (username,)))
+
+def remove_friend():
+    pass
+
+def start_disc():
+    pass
+
+def create_group():
+    pass
     
 if __name__ == '__main__':
     from os import remove
