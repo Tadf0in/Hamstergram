@@ -27,26 +27,6 @@ def _creer_connexion(db_file):
 
     return None
 
-def _update_db(db, sql_file):
-    """ Execute les requêtes SQL de sql_file pour modifier la DB db
-    In : db (objet connexion)
-         sql_file (str) : Chemin vers un fichier SQL (.sql)
-    Out : 
-    """
-    # Lecture du fichier et placement des requetes dans un tableau
-    createFile = open(sql_file, 'r')
-    createSql = createFile.read()
-    createFile.close()
-    sqlQueries = createSql.split(";")
-
-    # Execution de toutes les requetes du tableau
-    cursor = db.cursor()
-    for query in sqlQueries:
-        cursor.execute(query)
-
-    # commit des modifications
-    db.commit()
-
 def _execute(query, values=None):
     """
     Exécute la requête dans la bdd
@@ -150,10 +130,49 @@ def remove_user(username):
             _execute(query, (username,))
             return 0
 
+def are_friends(user1, user2):
+    """ Vérifie si 2 utilisateurs sont déjà amis
+    In : user1 (str) : Username du 1er utilisateur concerné
+         user2 (str) : Username du 2eme utilisateur concerné
+    Out : (bool) : True = Les 2 utilisateurs sont amis
+                             False = Les 2 utilisateurs ne sont pas amis
+        Retourne -1 si un des username est invalide
+    """
+    if type(user1) != str or type(user2) != str :
+        return -1 # Username invalide car pas str
+    query = """
+    SELECT name FROM USERS
+    WHERE username = ?;
+    """
+    if _execute(query, (user1,)) == [] or _execute(query, (user2,)) == [] :
+        return -1 # Un des usernames est invalide
+    else :
+        query = """
+        SELECT user_name, friend_name FROM FRIENDS
+        WHERE user_name = ? AND friend_name = ?;
+        """
+        if _execute(query, (user1, user2)) == [] and _execute(query, (user2, user1)) == [] :
+            return False # Pas amis
+        else :
+            return True # Amis
 
-def add_friend():
-    pass
-
+def add_friends(user_name, friend_name):
+    """ determine les amis d'un utilisateur
+    Out : liste des amis d'un utilisateur
+    """
+    if type(user_name) != str or type(friend_name) != str :
+        return -1 # Username invalide car pas str
+    elif user_name == friend_name :
+        return -1 # Usernames identiques
+    elif are_friends(user_name, friend_name) == True or are_friends(user_name, friend_name) == -1:
+        return -1 # Déjà amis ou username invalide
+    else :
+        query = """
+        INSERT INTO FRIENDS (user_name, friend_name)
+        VALUES ?, ?;
+        """
+        _execute(query, (user_name, friend_name))
+        return 0          
 
 def remove_friend(username : str, friendUsername : str):
 
@@ -190,18 +209,16 @@ def remove_friend(username : str, friendUsername : str):
     query = """DELETE FROM FRIENDS WHERE user_name=? AND friend_name=?"""
     _execute(query, (username, friendUsername))
     return 0
-    
-    pass
 
 def start_disc():
     pass
 
 def create_group():
     pass
-
+  
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
-
+    
 if __name__ == '__main__':
     from os import remove
     import time
@@ -270,6 +287,10 @@ if __name__ == '__main__':
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     _test_passed("remove_user")
 
+    # Tests pour are_friends() :
+    # assert are_friends('JexisteDeja', 'Nino') == True
+    assert are_friends(1, 2) == -1
+    # assert are_friends('JexistePas', 'user2') == False
 
     # Tests de remove_friend():
 
@@ -289,6 +310,14 @@ if __name__ == '__main__':
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == []
     _test_passed('remove_friend')
+    
+    # Tests pour add_friends() :
+    assert add_friend(1, 2) == -1
+    # assert add_friend('JexisteDeja', 'JexisteDeja') == -1 # Usernames identiques
+    # assert add_friend('JexistePas', 'friend_name') == -1 # Un des usernames invalide
+    # assert add_friend('user_name', 'JexistePas') == -1 # Un des usernames invalide
+    # assert add_friend('JexisteDeja', 'Nino') == -1 # Déjà amis
+    # assert add_friend('JexisteDeja', 'JaiPasDamis') == 0
 
     # On supprime la BDD temporaire
     remove('test.db')
