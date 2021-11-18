@@ -66,6 +66,25 @@ def _execute(query, values=None):
     db.close()
     return response
 
+def _list_users():
+    """ determine ce que contient la table USERS
+    Out : liste de tous les utilisateurs et de leurs informations
+    """
+    query = f"""
+    SELECT * FROM USERS
+    """
+    return (_execute(query))
+
+def list_friends(username):
+    """ determine les amis d'un utilisateur
+    Out : liste des amis d'un utilisateur
+    """
+    query = f"""
+    SELECT friend_name FROM FRIENDS
+    WHERE user_name = ?
+    """
+    return (_execute(query, (username,)))
+
 def add_user(username : str, name : str, mail : str, password : str, bio : str =''):
     """Ajoute un nouvel utilisateur
     In : username : nom d'utilisateur 
@@ -137,6 +156,7 @@ def add_friend():
 
 
 def remove_friend(username : str, friendUsername : str):
+
     """ La fonction supprime un ami
     In : username = nom de l'utilisateur qui souhaite supprimer un ami
         friendUsername : nom de l'ami en question
@@ -154,20 +174,20 @@ def remove_friend(username : str, friendUsername : str):
         if user[0] == username:
             user_exists = True
             break
+
     is_friend = False
-    for user in list_friends(username):
-        print(user, friendUsername)  # faire boucle for avec i
-        if user == friendUsername:
+    friend_list = list_friends(username)
+    for i in range(len(friend_list)):
+        if friend_list[0][i] == friendUsername:
             is_friend = True
             break
-    print(user_exists, is_friend)
+
     # si l'utilisateur n'existe pas ou que l'autre utilisateur n'est pas notre ami, on renvoie une erreur
     if not user_exists or not is_friend:
-        print("jesuilalol")
         return -1
 
     # si toutes les conditions sont passées, on supprime l'ami et on renvoie 0
-    query = """DELETE FROM FRIENDS WHERE user_name='?' AND friend_name='?'"""
+    query = """DELETE FROM FRIENDS WHERE user_name=? AND friend_name=?"""
     _execute(query, (username, friendUsername))
     return 0
     
@@ -179,24 +199,8 @@ def start_disc():
 def create_group():
     pass
 
-def _list_users():
-    """ determine ce que contient la table USERS
-    Out : liste de tous les utilisateurs et de leurs informations
-    """
-    query = f"""
-    SELECT * FROM USERS
-    """
-    return (_execute(query))
-
-def list_friends(username):
-    """ determine les amis d'un utilisateur
-    Out : liste des amis d'un utilisateur
-    """
-    query = f"""
-    SELECT friend_name FROM FRIENDS
-    WHERE user_name = '{username}'
-    """
-    return (_execute(query))
+def _test_passed(function_name):
+    print("Tests passés pour", str(function_name))
 
 if __name__ == '__main__':
     from os import remove
@@ -235,6 +239,7 @@ if __name__ == '__main__':
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
+    _test_passed("_list_users")
     # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur et que la table USERS n'a pas été modifiée
     assert add_user(1, 1, 1, 1) == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
@@ -248,7 +253,8 @@ if __name__ == '__main__':
     assert add_user('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
-    print('Tests passés pour add_user')
+    _test_passed("add_user")
+
 
     # Tests pour remove_user() :
     # On vérifie que passer un argument de mauvais type renvoie une erreur et ne modifie pas la table USERS
@@ -262,13 +268,14 @@ if __name__ == '__main__':
     # On vérifie que supprimer un utilisateur existant ne renvoie pas d'erreur et modifie bien la table USERS
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
-    print("Tests passés pour remove_user")
+    _test_passed("remove_user")
 
 
     # Tests de remove_friend():
 
     # On teste list_friends
     assert list_friends('JexisteDeja') == [('ninobg74',)]
+    _test_passed("list_friends")
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
     assert list_friends('JexisteDeja') == [('ninobg74',)]
@@ -279,11 +286,9 @@ if __name__ == '__main__':
     assert remove_friend('JeNexistePas', 'ninobg74') == -1
     assert list_friends('JexisteDeja') == [('ninobg74',)]
     # On vérifie que si on supprime un ami, la fonction ne renvoie pas d'erreur et la liste d'amis est modifiée en conséquent
-    print(remove_friend('JexisteDeja', 'loulou74490'))
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == []
-    print("Tests passés pour remover_friend")
+    _test_passed('remove_friend')
 
     # On supprime la BDD temporaire
-    time.sleep(10)
     remove('test.db')
