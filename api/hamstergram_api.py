@@ -154,10 +154,7 @@ def _list_users():
     """
     return (_execute(query))
 
-<<<<<<< HEAD
-def add_friend():
-    pass
-=======
+
 def list_friends(username):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
@@ -167,8 +164,7 @@ def list_friends(username):
     WHERE user_name = '?'
     """
     return (_execute(query, (username,)))
->>>>>>> a002a1d790c4d787654730e25fa96571711af07a
-
+    
 if __name__ == '__main__':
     from os import remove
     import time
