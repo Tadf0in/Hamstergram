@@ -264,7 +264,9 @@ if __name__ == '__main__':
     _execute(create_table_friends)
 
     # On ajoutes des données dans les relations
-    _execute("""INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon')""")
+    _execute("""INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
+    ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
+    ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')""")
     _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
 
