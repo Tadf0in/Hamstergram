@@ -59,6 +59,16 @@ def list_friends(username):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
     """
+    if not isinstance(str, username):
+        return -1  # On renvoie une erreur si username n'est pas du bon format
+
+    query = """
+    SELECT NAME FROM USERS
+    WHERE USERNAME = ?
+    """
+    if _execute(query, (username,)) == []:
+        return -1  # Si l'utilisateur n'est pas dans la BDD on renvoie une erreur
+        
     query = f"""
     SELECT friend_name FROM FRIENDS
     WHERE user_name = ?
