@@ -156,7 +156,7 @@ def are_friends(user1, user2):
         else :
             return True # Amis
 
-def add_friends(user_name, friend_name):
+def add_friend(user_name, friend_name):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
     """
