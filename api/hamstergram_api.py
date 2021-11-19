@@ -158,10 +158,6 @@ def is_friend(user, friend):
     if _execute(query, (user,)) == [] or _execute(query, (friend,)) == [] :
         return -1 # Un des usernames est invalide
     else :
-        query = """
-        SELECT user_name, friend_name FROM FRIENDS
-        WHERE user_name = ? AND friend_name = ?;
-        """
         friends = list_friends(user)[0]
         if friends == [] :
             return False # Pas d'amis
