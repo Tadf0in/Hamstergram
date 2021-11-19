@@ -59,7 +59,7 @@ def list_friends(username):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
     """
-    if not isinstance(str, username):
+    if not isinstance(username, str):
         return -1  # On renvoie une erreur si username n'est pas du bon format
 
     query = """
@@ -73,7 +73,8 @@ def list_friends(username):
     SELECT friend_name FROM FRIENDS
     WHERE user_name = ?
     """
-    return (_execute(query, (username,)))
+    friend_list = _execute(query, (username,))
+    return [friend_name[0] for friend_name in friend_list]
 
 def add_user(username : str, name : str, mail : str, password : str, bio : str =''):
     """Ajoute un nouvel utilisateur
@@ -161,7 +162,7 @@ def is_friend(user, friend):
         SELECT user_name, friend_name FROM FRIENDS
         WHERE user_name = ? AND friend_name = ?;
         """
-        friends = list_friends(user)
+        friends = list_friends(user)[0]
         if friends == [] :
             return False # Pas d'amis
         elif friend in friends :
@@ -186,7 +187,7 @@ def add_friend(user_name, friend_name):
     else :
         query = """
         INSERT INTO FRIENDS (user_name, friend_name)
-        VALUES ?, ?;
+        VALUES (?, ?);
         """
         _execute(query, (user_name, friend_name))
         return 0          
@@ -212,8 +213,10 @@ def remove_friend(username : str, friendUsername : str):
 
     is_friend = False
     friend_list = list_friends(username)
+    if friend_list == -1:
+        return -1
     for i in range(len(friend_list)):
-        if friend_list[0][i] == friendUsername:
+        if friend_list[i] == friendUsername:
             is_friend = True
             break
 
@@ -237,7 +240,6 @@ def _test_passed(function_name):
     
 if __name__ == '__main__':
     from os import remove
-    import time
 
     # Creation d'une BDD temporaire pour les tests
     testDb_file = open('test.db', 'x')
@@ -273,24 +275,29 @@ if __name__ == '__main__':
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None)]
+                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     _test_passed("_list_users")
     # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur et que la table USERS n'a pas été modifiée
     assert add_user(1, 1, 1, 1) == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None)]
+                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'essayer d'entrer un utilisateur avec un nom d'utilisateur déjà existant renvoie une erreur et que que la table USERS n'a pas été modifiée
     assert add_user('JexisteDeja', 'eoiokdeo', 'pasmoi@mail.fr', 'deded') == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None)]
+                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'essayer d'entrer un utilisateur dont l'adresse email est déjà utilisée renvoie une erreur et que la table USERS n'a donc pas été modifiée
     assert add_user('JexistePas', 'MoiOnSenFiche', 'existe.deja@mail.fr', 'MoiAussiOnSenFiche', None) == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None)]
+                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'ajouter un utilisateur donc l'adresse email et le nom d'utilisateur n'existent pas ne renvoie pas d'erreur et  que la table USERS a été modifiée en conséquent
     assert add_user('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     _test_passed("add_user")
 
@@ -299,16 +306,19 @@ if __name__ == '__main__':
     assert remove_user(1) == -1
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur inexistant renvoie une erreur et ne modifie pas la table USERS
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur existant ne renvoie pas d'erreur et modifie bien la table USERS
     assert remove_user('NouvelUtilisateur') == 0
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
-                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),]
+                            ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
+                            ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     _test_passed("remove_user")
 
     # Tests pour is_friend():
@@ -322,39 +332,37 @@ if __name__ == '__main__':
     assert is_friend("JexisteDeja", "ninobg74") == False
     # True si l'ami existe dans la BDD et est notre ami
     assert is_friend("JexisteDeja", "JeSuisDejaAmi") == True
-    _test_passed('is_friend()')
+    _test_passed('is_friend')
     
     # Tests pour list_friends():
-    assert list_friends(2) == -1 # Pas str
-    assert list_friends('JexistePas') == -1 # Username invalide
-    assert list_friends('JeSuisDejaAmi') == [] # Username valide mais sans amis
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)] # All good
+    assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
+    # assert list_friends(2) == -1 # Pas str
+    # assert list_friends('JexistePas') == -1 # Username invalide
     _test_passed("list_friends")
 
     # Tests pour add_friend():
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
+    assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     assert add_friend('JexisteDeja', 'JeSuisDejaAmi') == -1 # Déjà amis
     assert add_friend('cortex', 91) == -1 # Username pas str
     assert add_friend('JexisteDeja', 'ninobg74') == 0 # All good
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')] # On vérifie que ça a bien marcher
+    assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74'] # On vérifie que ça a bien marché
     _test_passed("add_friend")
 
     # Tests de remove_friend():
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')]
+    assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74']
     # On vérifie que si on tente de supprimer un ami que l'on a pas, la fonction renvoie une erreur et la liste d'amis n'es pas modifiée
     assert remove_friend('JexisteDeja', 'loulou74490') == -1
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')]
+    assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74']
     # On vérifie que si on tente de supprimer un ami de qqn qui n'existe pas, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend('JeNexistePas', 'ninobg74') == -1
-    assert list_friends('JexisteDeja') == [('ninobg74','ninobg74')]
+    assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74']
     # On vérifie que si on supprime un ami, la fonction ne renvoie pas d'erreur et la liste d'amis est modifiée en conséquent
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
+    assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
 
 
     # On supprime la BDD temporaire
-    time.sleep(20)
     remove('test.db')
