@@ -249,8 +249,8 @@ if __name__ == '__main__':
 
     # On ajoutes des données dans les relations
     _execute("""
-    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123')""")
-    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg74')
+    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon')""")
+    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
 
     # Tests pour add_user() :
@@ -287,37 +287,38 @@ if __name__ == '__main__':
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     _test_passed("remove_user")
 
-    # Tests pour are_friends() :
-    # assert are_friends('JexisteDeja', 'Nino') == True
-    assert are_friends(1, 2) == -1
-    # assert are_friends('JexistePas', 'user2') == False
-
     # Tests de remove_friend():
-
     # On teste list_friends
-    assert list_friends('JexisteDeja') == [('ninobg74',)]
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi', 'ninobg74')]
     _test_passed("list_friends")
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
-    assert list_friends('JexisteDeja') == [('ninobg74',)]
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')]
     # On vérifie que si on tente de supprimer un ami que l'on a pas, la fonction renvoie une erreur et la liste d'amis n'es pas modifiée
     assert remove_friend('JexisteDeja', 'loulou74490') == -1
-    assert list_friends('JexisteDeja') == [('ninobg74',)]
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')]
     # On vérifie que si on tente de supprimer un ami de qqn qui n'existe pas, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend('JeNexistePas', 'ninobg74') == -1
-    assert list_friends('JexisteDeja') == [('ninobg74',)]
+    assert list_friends('JexisteDeja') == [('ninobg74','ninobg74')]
     # On vérifie que si on supprime un ami, la fonction ne renvoie pas d'erreur et la liste d'amis est modifiée en conséquent
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
-    assert list_friends('JexisteDeja') == []
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
     _test_passed('remove_friend')
     
-    # Tests pour add_friends() :
-    assert add_friend(1, 2) == -1
-    # assert add_friend('JexisteDeja', 'JexisteDeja') == -1 # Usernames identiques
-    # assert add_friend('JexistePas', 'friend_name') == -1 # Un des usernames invalide
-    # assert add_friend('user_name', 'JexistePas') == -1 # Un des usernames invalide
-    # assert add_friend('JexisteDeja', 'Nino') == -1 # Déjà amis
-    # assert add_friend('JexisteDeja', 'JaiPasDamis') == 0
+    # Tests pour is_friend():
+    assert is_friend(1, 1) == -1
+    # On teste que la fonction renvoie:
+    # Une erreur si l'utilisateur auquel on vérifie si un autre utilisateur est son ami n'existe pas
+    assert is_friend("JeNexistePas", "JexisteDeja") == -1
+    # Une erreur si l'ami recherché n'existe pas dans la BDD
+    assert is_friend("JexisteDeja", "JeNexistePas") == -1
+    # False si l'ami existe dans la BDD mais n'est pas notre ami
+    assert is_friend("JexisteDeja", "ninobg74") == False
+    # True si l'ami existe dans la BDD et est notre ami
+    assert is_friend("JexisteDeja", "JeSuisDejaAmi") == True
+    _test_passed('is_friend()')
+
 
     # On supprime la BDD temporaire
+    time.sleep(20)
     remove('test.db')
