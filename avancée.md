@@ -20,3 +20,7 @@ Ajouter et supprimer des amis, voir sa liste d'amis.
 USERS(<u>username : TEXT</u>, name : TEXT, mail : TEXT (Unique), password : TEXT, bio : TEXT (Null))
 
 FRIENDS(<u>#user_name : TEXT, #friend_name : TEXT</u>)
+
+DISCUSSIONS(<u>#sender_name : TEXT, #receiver_name : TEXT</u>)
+
+MESSAGES(<u>#disc_id : INT, msg_id = INT<u>, content : VARCHAR(1000))

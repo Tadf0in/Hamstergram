@@ -225,8 +225,12 @@ def remove_friend(username : str, friendUsername : str):
     _execute(query, (username, friendUsername))
     return 0
 
-def start_disc():
-    pass
+def start_disc(sender : str, receiver : str) -> int:
+    """Permet de démarrer une discussion
+    In : sender : nom de la personne souhaitant démarrer une discussion
+         receiver : nom de la personne avec qui elle souhaite démarrer cette discussion 
+    Out : 0 si tout s'est bien passé, -1 sinon
+    """
 
 def create_group():
     pass
@@ -358,7 +362,6 @@ if __name__ == '__main__':
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
-
 
     # On supprime la BDD temporaire
     remove('test.db')
