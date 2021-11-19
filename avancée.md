@@ -6,13 +6,13 @@ Ajouter et supprimer des amis, voir sa liste d'amis.
 
 
 ##### Nino : 
-- fonction create_user() pour ajouter un utilisateur
+- fonction add_user() pour ajouter un utilisateur
 - fonction list_friends() pour voir sa liste d'amis
 - fonction remove_friend() pour supprimer quelqu'un en ami
 
 ##### Louis :
 - fonction remove_user() pour supprimer un utilisateur
-- fonction are_friends() pour vérifier si des utilisateurs sont déjà amis
+- fonction is_friend() pour vérifier si des utilisateurs sont déjà amis
 - fonction add_friend() pour ajouter quelqu'un en ami
 
 
