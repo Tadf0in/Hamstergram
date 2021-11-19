@@ -256,7 +256,7 @@ if __name__ == '__main__':
     # On ajoutes des données dans les relations
     _execute("""
     INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123')""")
-    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'ninobg74')
+    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
 
     # Tests pour add_user() :
@@ -293,16 +293,28 @@ if __name__ == '__main__':
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     _test_passed("remove_user")
 
-    # Tests pour are_friends() :
-    # assert are_friends('JexisteDeja', 'Nino') == True
+    # Tests pour is_friend() :
+    assert is_friend('JexisteDeja', 'JeSuisDejaAmi') == True
     assert is_friend(1, 2) == -1
-    # assert are_friends('JexistePas', 'user2') == False
+    assert is_friend('JexistePas', 'user2') == False
+    _test_passed("is_friend")
+    
+    # Tests pour list_friends():
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
+    # assert list_friends(2) == -1 # Pas str
+    # assert list_friends('JexistePas') == -1 # Username invalide
+    _test_passed("list_friends")
+
+    # Tests pour add_friend():
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
+    assert add_friend('JexisteDeja', 'JeSuisDejaAmi') == -1 # Déjà amis
+    assert add_friend('cortex', 91) == -1 # Username pas str
+    assert add_friend('JexisteDeja', 'ninobg74') == 0 # All good
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')] # On vérifie que ça a bien marcher
+    _test_passed("add_friend")
 
     # Tests de remove_friend():
-
-    # On teste list_friends
-    assert list_friends('JexisteDeja') == [('ninobg74',)]
-    _test_passed("list_friends")
+    
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
     assert list_friends('JexisteDeja') == [('ninobg74',)]
