@@ -323,9 +323,10 @@ if __name__ == '__main__':
     _test_passed('is_friend()')
     
     # Tests pour list_friends():
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
-    # assert list_friends(2) == -1 # Pas str
-    # assert list_friends('JexistePas') == -1 # Username invalide
+    assert list_friends(2) == -1 # Pas str
+    assert list_friends('JexistePas') == -1 # Username invalide
+    assert list_friends('JeSuisDejaAmi') == [] # Username valide mais sans amis
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)] # All good
     _test_passed("list_friends")
 
     # Tests pour add_friend():
