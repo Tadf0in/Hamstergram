@@ -130,41 +130,48 @@ def remove_user(username):
             _execute(query, (username,))
             return 0
 
-def are_friends(user1, user2):
+def is_friend(user, friend):
     """ Vérifie si 2 utilisateurs sont déjà amis
-    In : user1 (str) : Username du 1er utilisateur concerné
-         user2 (str) : Username du 2eme utilisateur concerné
+    In : user (str) : Username de l'utilisateur
+         friend (str) : Username du potentiel ami
     Out : (bool) : True = Les 2 utilisateurs sont amis
-                             False = Les 2 utilisateurs ne sont pas amis
+                    False = Les 2 utilisateurs ne sont pas amis
         Retourne -1 si un des username est invalide
     """
-    if type(user1) != str or type(user2) != str :
+    if type(user) != str or type(friend) != str :
         return -1 # Username invalide car pas str
     query = """
     SELECT name FROM USERS
     WHERE username = ?;
     """
-    if _execute(query, (user1,)) == [] or _execute(query, (user2,)) == [] :
+    if _execute(query, (user,)) == [] or _execute(query, (friend,)) == [] :
         return -1 # Un des usernames est invalide
     else :
         query = """
         SELECT user_name, friend_name FROM FRIENDS
         WHERE user_name = ? AND friend_name = ?;
         """
-        if _execute(query, (user1, user2)) == [] and _execute(query, (user2, user1)) == [] :
-            return False # Pas amis
-        else :
+        friends = list_friends(user)
+        if friends == [] :
+            return False # Pas d'amis
+        elif friend in friends :
             return True # Amis
+        else :
+            return False # Pas amis
 
-def add_friends(user_name, friend_name):
-    """ determine les amis d'un utilisateur
-    Out : liste des amis d'un utilisateur
+def add_friend(user_name, friend_name):
+    """ Ajoute un ami à un utilisateur
+    in : user_name (str) : Username de l'utilisateur
+         friend_name (str) : Username de l'ami à ajouter
+    Out : 
+        Retourne -1 si un username est invalide ou si déjà amis
+        Retourne 0 si a bien été ajouté en ami
     """
     if type(user_name) != str or type(friend_name) != str :
         return -1 # Username invalide car pas str
     elif user_name == friend_name :
         return -1 # Usernames identiques
-    elif are_friends(user_name, friend_name) == True or are_friends(user_name, friend_name) == -1:
+    elif is_friend(user_name, friend_name) == True or is_friend(user_name, friend_name) == -1:
         return -1 # Déjà amis ou username invalide
     else :
         query = """
@@ -175,7 +182,6 @@ def add_friends(user_name, friend_name):
         return 0          
 
 def remove_friend(username : str, friendUsername : str):
-
     """ La fonction supprime un ami
     In : username = nom de l'utilisateur qui souhaite supprimer un ami
         friendUsername : nom de l'ami en question
@@ -289,7 +295,7 @@ if __name__ == '__main__':
 
     # Tests pour are_friends() :
     # assert are_friends('JexisteDeja', 'Nino') == True
-    assert are_friends(1, 2) == -1
+    assert is_friend(1, 2) == -1
     # assert are_friends('JexistePas', 'user2') == False
 
     # Tests de remove_friend():
