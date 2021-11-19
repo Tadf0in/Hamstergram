@@ -130,41 +130,48 @@ def remove_user(username):
             _execute(query, (username,))
             return 0
 
-def are_friends(user1, user2):
+def is_friend(user, friend):
     """ Vérifie si 2 utilisateurs sont déjà amis
-    In : user1 (str) : Username du 1er utilisateur concerné
-         user2 (str) : Username du 2eme utilisateur concerné
+    In : user (str) : Username de l'utilisateur
+         friend (str) : Username du potentiel ami
     Out : (bool) : True = Les 2 utilisateurs sont amis
-                             False = Les 2 utilisateurs ne sont pas amis
+                    False = Les 2 utilisateurs ne sont pas amis
         Retourne -1 si un des username est invalide
     """
-    if type(user1) != str or type(user2) != str :
+    if type(user) != str or type(friend) != str :
         return -1 # Username invalide car pas str
     query = """
     SELECT name FROM USERS
     WHERE username = ?;
     """
-    if _execute(query, (user1,)) == [] or _execute(query, (user2,)) == [] :
+    if _execute(query, (user,)) == [] or _execute(query, (friend,)) == [] :
         return -1 # Un des usernames est invalide
     else :
         query = """
         SELECT user_name, friend_name FROM FRIENDS
         WHERE user_name = ? AND friend_name = ?;
         """
-        if _execute(query, (user1, user2)) == [] and _execute(query, (user2, user1)) == [] :
-            return False # Pas amis
-        else :
+        friends = list_friends(user)
+        if friends == [] :
+            return False # Pas d'amis
+        elif friend in friends :
             return True # Amis
+        else :
+            return False # Pas amis
 
 def add_friend(user_name, friend_name):
-    """ determine les amis d'un utilisateur
-    Out : liste des amis d'un utilisateur
+    """ Ajoute un ami à un utilisateur
+    in : user_name (str) : Username de l'utilisateur
+         friend_name (str) : Username de l'ami à ajouter
+    Out : 
+        Retourne -1 si un username est invalide ou si déjà amis
+        Retourne 0 si a bien été ajouté en ami
     """
     if type(user_name) != str or type(friend_name) != str :
         return -1 # Username invalide car pas str
     elif user_name == friend_name :
         return -1 # Usernames identiques
-    elif are_friends(user_name, friend_name) == True or are_friends(user_name, friend_name) == -1:
+    elif is_friend(user_name, friend_name) == True or is_friend(user_name, friend_name) == -1:
         return -1 # Déjà amis ou username invalide
     else :
         query = """
@@ -175,7 +182,6 @@ def add_friend(user_name, friend_name):
         return 0          
 
 def remove_friend(username : str, friendUsername : str):
-
     """ La fonction supprime un ami
     In : username = nom de l'utilisateur qui souhaite supprimer un ami
         friendUsername : nom de l'ami en question
@@ -248,8 +254,7 @@ if __name__ == '__main__':
     _execute(create_table_friends)
 
     # On ajoutes des données dans les relations
-    _execute("""
-    INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon')""")
+    _execute("""INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon')""")
     _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
 
@@ -272,7 +277,6 @@ if __name__ == '__main__':
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     _test_passed("add_user")
 
-
     # Tests pour remove_user() :
     # On vérifie que passer un argument de mauvais type renvoie une erreur et ne modifie pas la table USERS
     assert remove_user(1) == -1
@@ -287,10 +291,34 @@ if __name__ == '__main__':
     assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None)]
     _test_passed("remove_user")
 
-    # Tests de remove_friend():
-    # On teste list_friends
-    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi', 'ninobg74')]
+    # Tests pour is_friend():
+    assert is_friend(1, 1) == -1
+    # On teste que la fonction renvoie:
+    # Une erreur si l'utilisateur auquel on vérifie si un autre utilisateur est son ami n'existe pas
+    assert is_friend("JeNexistePas", "JexisteDeja") == -1
+    # Une erreur si l'ami recherché n'existe pas dans la BDD
+    assert is_friend("JexisteDeja", "JeNexistePas") == -1
+    # False si l'ami existe dans la BDD mais n'est pas notre ami
+    assert is_friend("JexisteDeja", "ninobg74") == False
+    # True si l'ami existe dans la BDD et est notre ami
+    assert is_friend("JexisteDeja", "JeSuisDejaAmi") == True
+    _test_passed('is_friend()')
+    
+    # Tests pour list_friends():
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
+    # assert list_friends(2) == -1 # Pas str
+    # assert list_friends('JexistePas') == -1 # Username invalide
     _test_passed("list_friends")
+
+    # Tests pour add_friend():
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
+    assert add_friend('JexisteDeja', 'JeSuisDejaAmi') == -1 # Déjà amis
+    assert add_friend('cortex', 91) == -1 # Username pas str
+    assert add_friend('JexisteDeja', 'ninobg74') == 0 # All good
+    assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')] # On vérifie que ça a bien marcher
+    _test_passed("add_friend")
+
+    # Tests de remove_friend():
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
     assert list_friends('JexisteDeja') == [('JeSuisDejaAmi','ninobg74')]
@@ -304,19 +332,6 @@ if __name__ == '__main__':
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == [('JeSuisDejaAmi',)]
     _test_passed('remove_friend')
-    
-    # Tests pour is_friend():
-    assert is_friend(1, 1) == -1
-    # On teste que la fonction renvoie:
-    # Une erreur si l'utilisateur auquel on vérifie si un autre utilisateur est son ami n'existe pas
-    assert is_friend("JeNexistePas", "JexisteDeja") == -1
-    # Une erreur si l'ami recherché n'existe pas dans la BDD
-    assert is_friend("JexisteDeja", "JeNexistePas") == -1
-    # False si l'ami existe dans la BDD mais n'est pas notre ami
-    assert is_friend("JexisteDeja", "ninobg74") == False
-    # True si l'ami existe dans la BDD et est notre ami
-    assert is_friend("JexisteDeja", "JeSuisDejaAmi") == True
-    _test_passed('is_friend()')
 
 
     # On supprime la BDD temporaire
