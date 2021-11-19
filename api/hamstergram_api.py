@@ -63,8 +63,8 @@ def list_friends(username):
         return -1  # On renvoie une erreur si username n'est pas du bon format
 
     query = """
-    SELECT NAME FROM USERS
-    WHERE USERNAME = ?
+    SELECT name FROM USERS
+    WHERE username = ?
     """
     if _execute(query, (username,)) == []:
         return -1  # Si l'utilisateur n'est pas dans la BDD on renvoie une erreur
