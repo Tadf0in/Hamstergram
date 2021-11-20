@@ -411,6 +411,7 @@ if TESTING:
     # Pas d'erreur si les arguments sont du bon type et valides
     assert start_disc('ninobg74', 'JeSuisDejaAmi') == 0
     _test_passed('start_disc')
-    
+
     # On supprime la BDD temporaire
+    t = input('')  # wait before deleting test.db
     remove('test.db')
