@@ -55,6 +55,14 @@ def _list_users():
     """
     return (_execute(query))
 
+def _user_exists(user : str):
+    """determine si un utilisateur existe
+    In : user : nom d'utiliseur a verifier
+    Out : True si l'utilisateur existe dans la BDD
+          False sinon
+          -1 si le paramètre est invalide
+    """
+
 def list_friends(username):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
