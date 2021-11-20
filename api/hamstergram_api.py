@@ -250,13 +250,17 @@ def start_disc(sender : str, receiver : str) -> int:
     if not _user_exists(sender) or not _user_exists(receiver) or sender == receiver:
         return -1  # un des deux n'existe pas ou les deux sont les mêmes
     
-    query = """SELECT sender FROM DISCUSSIONS WHERE sender=? AND receiver=?"""
-    if _execute(query, (sender, receiver)) != []:
+    query = """SELECT sender FROM DISCUSSIONS WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?)"""
+    if _execute(query, (sender, receiver, receiver, sender)) != []:
         return -1  # La discussion existe deja
 
     query = """INSERT INTO DISCUSSIONS (sender, receiver) VALUES (?, ?)"""
     _execute(query, (sender, receiver))
     return 0
+
+
+def delete_disc(sender : str, receiver : str) -> int:
+    pass
 
 
 def _test_passed(function_name):
@@ -403,13 +407,21 @@ if TESTING:
     # Une erreur si les types des arguments ne sont pas les bons
     assert start_disc(-1, -2) == -1
     # Une erreur si les arguments sont invalides et qu'a chaque fois la BDD n'est pas modifiée
+    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
     assert start_disc('JexisteDeja', 'JeNexistePas') == -1
+    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
     assert start_disc('JeNexistePas', 'JexisteDeja') == -1
+    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
     assert start_disc('JexisteDeja', 'JexisteDeja') == -1
+    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
     # Une erreur si la discussion existe deja
     assert start_disc('JexisteDeja', 'ninobg74') == -1
+    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
+    assert start_disc('ninobg74', 'JexisteDeja') == -1
+    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
     # Pas d'erreur si les arguments sont du bon type et valides
     assert start_disc('ninobg74', 'JeSuisDejaAmi') == 0
+    assert _discussion_list() == [('JexisteDeja', 'ninobg74'), ('ninobg74', 'JeSuisDejaAmi')]
     _test_passed('start_disc')
 
     # On supprime la BDD temporaire
