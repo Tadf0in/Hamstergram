@@ -227,10 +227,16 @@ def start_disc(sender : str, receiver : str) -> int:
     Out : 0 si tout s'est bien passé, -1 sinon
     """
     if not isinstance(sender, str) or not isinstance(receiver, str):
-        return -1
-    
-    
+        return -1  # Mauvais format
 
+    if not _user_exists(sender) or not _user_exists(receiver) or sender == receiver:
+        return -1  # un des deux n'existe pas ou les deux sont les mêmes
+    
+    query = """INSERT INTO DISCUSSIONS (sender_name, receiver_name) VALUES (?, ?)"""
+    _execute(query, (sender, receiver))
+    return 0
+
+    
 def create_group():
     pass
   
