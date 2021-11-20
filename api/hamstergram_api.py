@@ -55,6 +55,22 @@ def _list_users():
     """
     return (_execute(query))
 
+def _user_exists(user : str):
+    """determine si un utilisateur existe
+    In : user : nom d'utiliseur a verifier
+    Out : True si l'utilisateur existe dans la BDD
+          False sinon
+          -1 si le paramètre est invalide
+    """
+    if not isinstance(user, str):
+        return -1
+
+    query = """SELECT username FROM USERS WHERE username=?"""
+    if _execute(query, (user,)) == []:
+        return False
+    else:
+        return True
+
 def list_friends(username):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
@@ -62,11 +78,7 @@ def list_friends(username):
     if not isinstance(username, str):
         return -1  # On renvoie une erreur si username n'est pas du bon format
 
-    query = """
-    SELECT name FROM USERS
-    WHERE username = ?
-    """
-    if _execute(query, (username,)) == []:
+    if not _user_exists(username):
         return -1  # Si l'utilisateur n'est pas dans la BDD on renvoie une erreur
         
     query = f"""
@@ -91,11 +103,7 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
     if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str) or not isinstance(bio, str):
         return -1  # si jamais le type n'es pas bon, on renvoie une erreur
 
-    query = f"""
-        SELECT name FROM USERS
-        WHERE username = ?;
-        """
-    if _execute(query, (username,)) == [] :  # On vérifie que le nom d'utilisateur n'existe pas déjà
+    if not _user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
         query = f"""
         SELECT name FROM USERS
         WHERE mail = ?;
@@ -127,11 +135,7 @@ def remove_user(username):
     if type(username) != str :
         return -1 # Username invalide car pas str
     else :
-        query = f"""
-        SELECT name FROM USERS
-        WHERE username = ?;
-        """
-        if _execute(query, (username,)) == [] :
+        if not _user_exists(username):
             return -1 # Username invalide car non inscrit
         else :
             query = f"""
@@ -151,20 +155,17 @@ def is_friend(user, friend):
     """
     if type(user) != str or type(friend) != str :
         return -1 # Username invalide car pas str
-    query = """
-    SELECT name FROM USERS
-    WHERE username = ?;
-    """
-    if _execute(query, (user,)) == [] or _execute(query, (friend,)) == [] :
+        
+    if not _user_exists(user) or not _user_exists(friend) :
         return -1 # Un des usernames est invalide
-    else :
-        friends = list_friends(user)[0]
-        if friends == [] :
-            return False # Pas d'amis
-        elif friend in friends :
-            return True # Amis
-        else :
-            return False # Pas amis
+    
+    friends = list_friends(user)[0]
+    if friends == [] :
+        return False # Pas d'amis
+    elif friend in friends :
+        return True # Amis
+    
+    return False # Pas amis
 
 def add_friend(user_name, friend_name):
     """ Ajoute un ami à un utilisateur
@@ -178,7 +179,7 @@ def add_friend(user_name, friend_name):
         return -1 # Username invalide car pas str
     elif user_name == friend_name :
         return -1 # Usernames identiques
-    elif is_friend(user_name, friend_name) == True or is_friend(user_name, friend_name) == -1:
+    elif is_friend(user_name, friend_name) or is_friend(user_name, friend_name) == -1:
         return -1 # Déjà amis ou username invalide
     else :
         query = """
@@ -200,13 +201,7 @@ def remove_friend(username : str, friendUsername : str):
     if not isinstance(username, str) or not isinstance(friendUsername, str):
         return -1
 
-    # On vérifie que l'utilisateur existe et que l'ami a supprime est dans la liste d'amis
-    user_exists = False
-    for user in _list_users():
-        if user[0] == username:
-            user_exists = True
-            break
-
+    # On vérifie que l'ami a supprime est dans la liste d'amis
     is_friend = False
     friend_list = list_friends(username)
     if friend_list == -1:
@@ -217,7 +212,7 @@ def remove_friend(username : str, friendUsername : str):
             break
 
     # si l'utilisateur n'existe pas ou que l'autre utilisateur n'est pas notre ami, on renvoie une erreur
-    if not user_exists or not is_friend:
+    if not _user_exists(username) or not is_friend:
         return -1
 
     # si toutes les conditions sont passées, on supprime l'ami et on renvoie 0
