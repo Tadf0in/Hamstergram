@@ -231,6 +231,10 @@ def start_disc(sender : str, receiver : str) -> int:
          receiver : nom de la personne avec qui elle souhaite démarrer cette discussion 
     Out : 0 si tout s'est bien passé, -1 sinon
     """
+    if not isinstance(sender, str) or not isinstance(receiver, str):
+        return -1
+    
+    
 
 def create_group():
     pass
