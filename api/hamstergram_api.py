@@ -27,6 +27,7 @@ def _creer_connexion(db_file):
 
     return None
 
+
 def _execute(query, values=None):
     """
     Exécute la requête dans la bdd
@@ -46,6 +47,7 @@ def _execute(query, values=None):
     db.close()
     return response
 
+
 def _list_users():
     """ determine ce que contient la table USERS
     Out : liste de tous les utilisateurs et de leurs informations
@@ -54,6 +56,7 @@ def _list_users():
     SELECT * FROM USERS
     """
     return (_execute(query))
+
 
 def _user_exists(user : str):
     """determine si un utilisateur existe
@@ -79,6 +82,7 @@ def _discussion_list():
     query = """SELECT * FROM DISCUSSIONS"""
     return _execute(query)
 
+
 def list_friends(username):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
@@ -95,6 +99,7 @@ def list_friends(username):
     """
     friend_list = _execute(query, (username,))
     return [friend_name[0] for friend_name in friend_list]
+
 
 def add_user(username : str, name : str, mail : str, password : str, bio : str =''):
     """Ajoute un nouvel utilisateur
@@ -133,6 +138,7 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
     else:
         return -1  # On renvoie -1 car l'utilisateur existe déjà
 
+    
 def remove_user(username):
     """ Supprime l'utilisateur 
     In : username (str) : username d'un utilisateur inscrit
@@ -153,6 +159,7 @@ def remove_user(username):
             _execute(query, (username,))
             return 0
 
+        
 def is_friend(user, friend):
     """ Vérifie si 2 utilisateurs sont déjà amis
     In : user (str) : Username de l'utilisateur
@@ -174,6 +181,7 @@ def is_friend(user, friend):
         return True # Amis
     
     return False # Pas amis
+
 
 def add_friend(user_name, friend_name):
     """ Ajoute un ami à un utilisateur
@@ -197,6 +205,7 @@ def add_friend(user_name, friend_name):
         _execute(query, (user_name, friend_name))
         return 0          
 
+    
 def remove_friend(username : str, friendUsername : str):
     """ La fonction supprime un ami
     In : username = nom de l'utilisateur qui souhaite supprimer un ami
@@ -228,6 +237,7 @@ def remove_friend(username : str, friendUsername : str):
     _execute(query, (username, friendUsername))
     return 0
 
+
 def start_disc(sender : str, receiver : str) -> int:
     """Permet de démarrer une discussion
     In : sender : nom de la personne souhaitant démarrer une discussion
@@ -249,13 +259,10 @@ def start_disc(sender : str, receiver : str) -> int:
     return 0
 
 
-def create_group():
-    pass
-  
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
-if __name__ == '__main__':
+if TESTING:
     from os import remove
 
     # Creation d'une BDD temporaire pour les tests
