@@ -75,14 +75,6 @@ def _user_exists(user : str):
         return True
 
 
-def _discussion_list() -> list:
-    """renvoie toutes les discussions dans la table DISCUSSIONS
-    Out : liste de tuples contenant les infos des discussions
-    """
-    query = """SELECT * FROM DISCUSSIONS"""
-    return _execute(query)
-
-
 def list_friends(username : str):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
