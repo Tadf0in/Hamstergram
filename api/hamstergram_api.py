@@ -256,9 +256,11 @@ def new_group(name : str, owner : str, members : list):
     VALUES (?, ?);
     """
 
+    print(name, people)
     _execute(query, (name, people))
     return 0
     
+new_group('Groupe1', 'Weshiwousha', ['trésor','de','kellogs'])
 
 
 def _test_passed(function_name):
@@ -266,6 +268,7 @@ def _test_passed(function_name):
     
     
 if TESTING:
+    print(aaaaaaaa)
     from os import remove
 
     # Creation d'une BDD temporaire pour les tests
@@ -276,36 +279,42 @@ if TESTING:
     # la methode execute de sqlite 3)
     create_tables = [
     """CREATE TABLE "USERS" (
-            "username" TEXT  NOT NULL ,
-            "name" TEXT  NOT NULL ,
-            "mail" TEXT  NOT NULL ,
-            "password" TEXT  NOT NULL ,
-            "bio" TEXT  NULL ,
-            CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
-            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail"));
+            "username"    TEXT NOT NULL,
+            "name"    TEXT NOT NULL,
+            "mail"    TEXT NOT NULL UNIQUE,
+            "password"    TEXT NOT NULL,
+            "bio"    TEXT NULL,
+            PRIMARY KEY("username")
+        );
         """,
-    """CREATE TABLE FRIENDS (
-            "user_name" TEXT  NOT NULL ,
-            "friend_name" TEXT  NOT NULL ,
-            CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
-            CONSTRAINT "fk_user_name" FOREIGN KEY ("user_name") REFERENCES USERS("username")
-            CONSTRAINT "fk_friend_name" FOREIGN KEY ("friend_name") REFERENCES USERS("username"))
+    """CREATE TABLE "FRIENDS" (
+            "user_name"    TEXT NOT NULL,
+            "friend_name"    TEXT NOT NULL,
+            PRIMARY KEY("user_name","friend_name"),
+            FOREIGN KEY("user_name") REFERENCES "USERS"("username"),
+            FOREIGN KEY("friend_name") REFERENCES "USERS"("username")
+        );
         """,
-    """CREATE TABLE GROUPS (
-        "group_id" INTEGER NOT NULL,
-        CONSTRAINT "pk_GROUPS" PRIMARY KEY ("group_id" AUTOINCREMENT))
+    """CREATE TABLE "GROUPES" (
+            "group_id"    INTEGER NOT NULL,
+            "name"    TEXT NOT NULL,
+            "members"    TEXT NOT NULL,
+            PRIMARY KEY("group_id" AUTOINCREMENT)
+        );
         """,
-    """CREATE TABLE MESSAGES (
-            "msg_id" INTEGER NOT NULL,
-            "content" VARCHAR(1000) NOT NULL,
-            "sender" TEXT NOT NULL,
-            "receiver" TEXT NULL,
-            "group_id" INT NULL,
-            "date" DATETIME,
-            CONSTRAINT "pk_MESSAGES" PRIMARY KEY ("msg_id" AUTOINCREMENT)
-            CONSTRAINT "fk_sender" FOREIGN KEY ("sender") REFERENCES USERS("username")
-            CONSTRAINT "fk_receiver" FOREIGN KEY ("receiver") REFERENCES USERS("username")
-            CONSTRAINT "fk_group_id" FOREIGN KEY ("group_id") REFERENCES GROUPS("group_id"))
+    """CREATE TABLE "MESSAGES" (
+            "msg_id"    INTEGER NOT NULL,
+            "content"    VARCHAR(1000) NOT NULL,
+            "sender"    TEXT NOT NULL,
+            "receiver"    TEXT NULL,
+            "group_id"    INTEGER NULL,
+            "date"  DATETIME DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY("receiver") REFERENCES "USERS"("username"),
+            FOREIGN KEY("sender") REFERENCES "USERS"("username"),
+            FOREIGN KEY("group_id") REFERENCES "GROUPES"("group_id"),
+            CHECK("receiver" NOT NULL OR "group_id" NOT NULL),
+            PRIMARY KEY("msg_id" AUTOINCREMENT)
+        );
         """]
     
     for create_table in create_tables:
