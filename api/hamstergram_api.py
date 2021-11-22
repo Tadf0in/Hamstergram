@@ -238,10 +238,23 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
+def send_msg(content : str, sender : str, date : str, receiver : str = None, group_id : int = None) -> int:
+    """La fonction permet d'envoyer un message dans une discussion ou un groupe
+    In : content : contenu du message
+         sender : username de l'expéditeur
+         date : date au format datetime
+         receiver : username du destinataire (non utilisé dans le cas des groupes)
+         group_id : id du groupe dans lequel le message est envoyé (non utilisé dans le cas des discussions privées)
+    Out : -1 en cas d'erreur ou de paramètre invalide
+           0 si tout s'est bien déroulé
+    """
+    pass
+
+
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
-    
+
 if TESTING:
     from os import remove
 
