@@ -238,33 +238,9 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
-def start_disc(sender : str, receiver : str) -> int:
-    """Permet de démarrer une discussion
-    In : sender : nom de la personne souhaitant démarrer une discussion
-         receiver : nom de la personne avec qui elle souhaite démarrer cette discussion 
-    Out : 0 si tout s'est bien passé, -1 sinon
-    """
-    if not isinstance(sender, str) or not isinstance(receiver, str):
-        return -1  # Mauvais format
-
-    if not _user_exists(sender) or not _user_exists(receiver) or sender == receiver:
-        return -1  # un des deux n'existe pas ou les deux sont les mêmes
-    
-    query = """SELECT sender FROM DISCUSSIONS WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?)"""
-    if _execute(query, (sender, receiver, receiver, sender)) != []:
-        return -1  # La discussion existe deja
-
-    query = """INSERT INTO DISCUSSIONS (sender, receiver) VALUES (?, ?)"""
-    _execute(query, (sender, receiver))
-    return 0
-
-
-def delete_disc(sender : str, receiver : str) -> int:
-    pass
-
-
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
+    
     
 if TESTING:
     from os import remove
@@ -275,7 +251,8 @@ if TESTING:
 
     # Creation des relations dans la base de données: (On est obligés de le faire en deux fois avec 
     # la methode execute de sqlite 3)
-    create_table_users = """CREATE TABLE "USERS" (
+    create_tables = [
+    """CREATE TABLE "USERS" (
             "username" TEXT  NOT NULL ,
             "name" TEXT  NOT NULL ,
             "mail" TEXT  NOT NULL ,
@@ -283,33 +260,40 @@ if TESTING:
             "bio" TEXT  NULL ,
             CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
             CONSTRAINT "uk_USERS_mail" UNIQUE ("mail"));
-    """
-    create_table_friends ="""CREATE TABLE FRIENDS (
+        """,
+    """CREATE TABLE FRIENDS (
             "user_name" TEXT  NOT NULL ,
             "friend_name" TEXT  NOT NULL ,
             CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
             CONSTRAINT "fk_user_name" FOREIGN KEY ("user_name") REFERENCES USERS("username")
-            CONSTRAINT "fk_friend_name" FOREIGN KEY ("friend_name") REFERENCES USERS("username")
-        )
-    """
-    create_table_discussions = """CREATE TABLE DISCUSSIONS (
+            CONSTRAINT "fk_friend_name" FOREIGN KEY ("friend_name") REFERENCES USERS("username"))
+        """,
+    """CREATE TABLE GROUPS (
+        "group_id" INTEGER NOT NULL,
+        CONSTRAINT "pk_GROUPS" PRIMARY KEY ("group_id" AUTOINCREMENT))
+        """,
+    """CREATE TABLE MESSAGES (
+            "msg_id" INTEGER NOT NULL,
+            "content" VARCHAR(1000) NOT NULL,
             "sender" TEXT NOT NULL,
-            "receiver" TEXT NOT NULL,
-            CONSTRAINT "pk_DISCUSSIONS" PRIMARY KEY ("sender", "receiver")
+            "receiver" TEXT NULL,
+            "group_id" INT NULL,
+            "date" DATETIME,
+            CONSTRAINT "pk_MESSAGES" PRIMARY KEY ("msg_id" AUTOINCREMENT)
             CONSTRAINT "fk_sender" FOREIGN KEY ("sender") REFERENCES USERS("username")
-            CONSTRAINT "fk_receiver" FOREIGN KEY ("receiver") REFERENCES USERS("username"))
-        """
-    _execute(create_table_users)
-    _execute(create_table_friends)
-    _execute(create_table_discussions)
-
+            CONSTRAINT "fk_receiver" FOREIGN KEY ("receiver") REFERENCES USERS("username")
+            CONSTRAINT "fk_group_id" FOREIGN KEY ("group_id") REFERENCES GROUPS("group_id"))
+        """]
+    
+    for create_table in create_tables:
+        _execute(create_table)
     # On ajoutes des données dans les relations
     _execute("""INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
     ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
     ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')""")
     _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
-    _execute("""INSERT INTO DISCUSSIONS (sender, receiver) VALUES ('JexisteDeja', 'ninobg74')""")
+    _execute("""INSERT INTO MESSAGES (content, sender, receiver, date) VALUES ('Salut slaut', 'JexisteDeja', 'ninobg74', '20211122 12:00:00')""")
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
@@ -401,28 +385,6 @@ if TESTING:
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
-
-    # Tests pour start_disc
-    # On vérifie que la fonction renvoie :
-    # Une erreur si les types des arguments ne sont pas les bons
-    assert start_disc(-1, -2) == -1
-    # Une erreur si les arguments sont invalides et qu'a chaque fois la BDD n'est pas modifiée
-    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
-    assert start_disc('JexisteDeja', 'JeNexistePas') == -1
-    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
-    assert start_disc('JeNexistePas', 'JexisteDeja') == -1
-    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
-    assert start_disc('JexisteDeja', 'JexisteDeja') == -1
-    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
-    # Une erreur si la discussion existe deja
-    assert start_disc('JexisteDeja', 'ninobg74') == -1
-    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
-    assert start_disc('ninobg74', 'JexisteDeja') == -1
-    assert _discussion_list() == [('JexisteDeja', 'ninobg74')]
-    # Pas d'erreur si les arguments sont du bon type et valides
-    assert start_disc('ninobg74', 'JeSuisDejaAmi') == 0
-    assert _discussion_list() == [('JexisteDeja', 'ninobg74'), ('ninobg74', 'JeSuisDejaAmi')]
-    _test_passed('start_disc')
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
