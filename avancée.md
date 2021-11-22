@@ -1,8 +1,9 @@
 ## Hamstergram API
 
-L'api est une api de messagerie pour réseau social. 
-Elle integrera des fonctions pour créer un utilisateur et en supprimer. 
-Ajouter et supprimer des amis, voir sa liste d'amis.
+L'api est une api de messagerie pour réseau social. <br>
+Elle integrera des fonctions pour créer un utilisateur et en supprimer. <br>
+Ajouter et supprimer des amis. <br>
+Voir sa liste d'amis et savoir si on est ami avec quelqu'un.
 
 
 ##### Nino : 
