@@ -75,14 +75,6 @@ def _user_exists(user : str):
         return True
 
 
-def _discussion_list() -> list:
-    """renvoie toutes les discussions dans la table DISCUSSIONS
-    Out : liste de tuples contenant les infos des discussions
-    """
-    query = """SELECT * FROM DISCUSSIONS"""
-    return _execute(query)
-
-
 def list_friends(username : str):
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
@@ -398,6 +390,24 @@ if TESTING:
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
+
+    # Test pour send_msg():
+    # On vérifie que la fonction renvoie une erreur (et que la BDD n'est pas modifiée) si :
+    # un ou plusieurs arguments n'est pas du bon type :
+    assert send_msg(1, 1, 1) == -1
+    # l'expéditeur est le même que le destinataire :
+    assert send_msg("Salut", "ninobg74", "unesuperdate", receiver='ninobg74') == -1
+    # On tente de rentrer a la fois un nom de destinataire et un id de groupe:
+    assert send_msg("Salut", "ninobg74", "20210221 13:58", receiver='JexisteDeja', group_id='28484389') == -1
+    # l'heure n'est pas au bon format :
+    assert send_msg("Salut", "JexisteDeja", "MauvaisFormat", receiver="ninobg74") == -1
+    # le message est vide :
+    assert send_msg("", "ninobg74", "20210221 13:58", receiver="JexisteDeja") == -1
+    # un ou les utilisateurs n'existent pas :
+    assert send_msg("Salut", "JeNexistePas", "20210221 13:58", receiver="JexisteDeja") == -1
+    assert send_msg("Salut", "JexisteDeja", "20210221 13:58", receiver="JeNexistePas") == -1
+
+
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
