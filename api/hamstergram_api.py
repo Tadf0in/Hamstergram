@@ -72,7 +72,7 @@ def _user_exists(user : str):
     if _execute(query, (user,)) == []:
         return False
     else:
-        return True)
+        return True
 
 
 def list_friends(username : str):
@@ -107,6 +107,8 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
     """
     if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str) or not isinstance(bio, str):
         return -1  # si jamais le type n'es pas bon, on renvoie une erreur
+
+    username.replace(";", "")
 
     if not _user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
         query = f"""
@@ -238,6 +240,25 @@ def new_group(name : str, owner : str, members : list):
         -1 si un username est invalide ou si moins de 3
         0 si le groupe a bien été crée
     """
+    if len(members) < 3 or type(owner) != str or not _user_exists(owner) :
+        return -1 # Pas assez ou owner invalide
+
+    people = owner + ';'
+    for member in members :
+        if type(member) != str :
+            return -1 # Username d'un membre pas str
+        elif not _user_exists(member) :
+            return -1 # Username d'un membre invalide
+        
+        people += member + ';' 
+    
+    query = """ INSERT INTO GROUPES (name, members)
+    VALUES (?, ?);
+    """
+
+    _execute(query, (name, people))
+    return 0
+    
 
 
 def _test_passed(function_name):
