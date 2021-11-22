@@ -231,6 +231,7 @@ def remove_friend(username : str, friendUsername : str) -> int:
     _execute(query, (username, friendUsername))
     return 0
 
+
 def new_group(name : str, owner : str, members : list):
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
@@ -240,7 +241,7 @@ def new_group(name : str, owner : str, members : list):
         -1 si un username est invalide ou si moins de 3
         0 si le groupe a bien été crée
     """
-    if len(members) < 3 or type(owner) != str or not _user_exists(owner) :
+    if len(members) < 2 or type(owner) != str or not _user_exists(owner) :
         return -1 # Pas assez ou owner invalide
 
     people = owner + ';'
@@ -260,15 +261,12 @@ def new_group(name : str, owner : str, members : list):
     _execute(query, (name, people))
     return 0
     
-new_group('Groupe1', 'Weshiwousha', ['trésor','de','kellogs'])
-
 
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
     
 if TESTING:
-    print(aaaaaaaa)
     from os import remove
 
     # Creation d'une BDD temporaire pour les tests
@@ -417,6 +415,11 @@ if TESTING:
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
+
+    assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
+    assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
+    assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
+
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
