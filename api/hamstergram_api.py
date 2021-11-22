@@ -425,9 +425,5 @@ if TESTING:
     _test_passed('start_disc')
 
     # On supprime la BDD temporaire
-<<<<<<< HEAD
-    remove('test.db')
-=======
     t = input('')  # wait before deleting test.db
     remove('test.db')
->>>>>>> 32f3539d52ede788f945bf04615fdce98489496a

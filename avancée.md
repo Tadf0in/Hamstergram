@@ -22,6 +22,6 @@ USERS(<u>username : TEXT</u>, name : TEXT, mail : TEXT (Unique), password : TEXT
 
 FRIENDS(<u>#user_name : TEXT, #friend_name : TEXT</u>)
 
-DISCUSSIONS(<u>#sender_name : TEXT, #receiver_name : TEXT</u>)
+MESSAGES(<u>id : INT</u>, message : VARCHAR(1000), #sender : TEXT, #receiver : TEXT (Null), #group_id :INT (Null), date : DATETIME (Default : Current_timestamp))
 
-MESSAGES(<u>#disc_id : INT, msg_id = INT<u>, content : VARCHAR(1000))
+GROUPES(<u>group_id : INT</u>, name : TEXT, members : TEXT)
