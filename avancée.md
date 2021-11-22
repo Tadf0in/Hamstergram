@@ -13,6 +13,7 @@ Envoyer un message à quelqu'un ou dans un groupe.
 - fonction add_user() pour ajouter un utilisateur
 - fonction list_friends() pour voir sa liste d'amis
 - fonction remove_friend() pour supprimer quelqu'un en ami
+- send_msg() pour envoyer un message à quelqu'un ou dans un groupe
 
 ##### Louis :
 - fonction remove_user() pour supprimer un utilisateur
