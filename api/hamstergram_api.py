@@ -229,6 +229,16 @@ def remove_friend(username : str, friendUsername : str) -> int:
     _execute(query, (username, friendUsername))
     return 0
 
+def new_group(name : str, owner : str, members : list):
+    """ Créer un nouveau groupe avec au moins 3 participants
+    In : name : Nom du groupe
+         owner : username du créateur du groupe
+         members : liste des usernames des membres présents dans le groupe
+    Out :
+        -1 si un username est invalide ou si moins de 3
+        0 si le groupe a bien été crée
+    """
+
 
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
