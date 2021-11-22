@@ -256,11 +256,27 @@ def new_group(name : str, owner : str, members : list):
     query = """ INSERT INTO GROUPES (name, members)
     VALUES (?, ?);
     """
-
-    print(name, people)
     _execute(query, (name, people))
     return 0
-    
+
+
+def members_in_group(group_id : int) -> list :
+    """ Affiche la liste des utilisateurs présents dans un groupe
+    In : group_id : id du groupe
+    Out : members : liste des utilisateurs
+        -1 si id invalide
+    """
+    query = """SELECT members FROM GROUPES
+    WHERE group_id = ?; 
+    """
+    people = _execute(query ,(group_id,))[0][0]
+    if people == [] :
+        return -1 # id invalide
+    members = []
+    for member in people[:-1].split(";") :
+        members.append(member)
+    return sorted(members)
+
 
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
@@ -419,6 +435,9 @@ if TESTING:
     assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
     assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
     assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
+    assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
+    _test_passed('new_group')
+    _test_passed('members_in_group')
 
 
     # On supprime la BDD temporaire
