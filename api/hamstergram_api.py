@@ -256,7 +256,7 @@ def new_group(name : str, owner : str, members : list):
     query = """ INSERT INTO GROUPES (name, members)
     VALUES (?, ?);
     """
-    _execute(query, (name, people))
+    _execute(query, (name, people[:-1]))
     return 0
 
 
@@ -269,11 +269,13 @@ def members_in_group(group_id : int) -> list :
     query = """SELECT members FROM GROUPES
     WHERE group_id = ?; 
     """
-    people = _execute(query ,(group_id,))[0][0]
+    people = _execute(query ,(group_id,))
     if people == [] :
         return -1 # id invalide
+    else :
+        people = people[0][0]
     members = []
-    for member in people[:-1].split(";") :
+    for member in people.split(";") :
         members.append(member)
     return sorted(members)
 
@@ -436,6 +438,7 @@ if TESTING:
     assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
     assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
     assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
+    assert members_in_group(0) == -1
     _test_passed('new_group')
     _test_passed('members_in_group')
 
