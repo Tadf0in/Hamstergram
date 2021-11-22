@@ -72,15 +72,7 @@ def _user_exists(user : str):
     if _execute(query, (user,)) == []:
         return False
     else:
-        return True
-
-
-def _discussion_list() -> list:
-    """renvoie toutes les discussions dans la table DISCUSSIONS
-    Out : liste de tuples contenant les infos des discussions
-    """
-    query = """SELECT * FROM DISCUSSIONS"""
-    return _execute(query)
+        return True)
 
 
 def list_friends(username : str):
