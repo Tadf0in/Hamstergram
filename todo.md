@@ -10,7 +10,6 @@
 
 <br>
 
-- [X] Créer une discussion entre 2 utilisateurs
 - [ ] Envoyer un message dans une discussion
 - [ ] Supprimer un message
 
