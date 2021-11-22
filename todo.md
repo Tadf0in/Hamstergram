@@ -5,12 +5,14 @@
 
 - [X] Vérifier si amis ou pas
 - [X] Ajouter un ami
-- [ ] Supprimer un ami
+- [X] Supprimer un ami
 - [X] Voir liste d'amis
 
 <br>
 
-- [ ] Discuter entre 2 utilisateurs
+- [X] Créer une discussion entre 2 utilisateurs
+- [ ] Envoyer un message dans une discussion
+- [ ] Supprimer un message
 
 <br>
 
