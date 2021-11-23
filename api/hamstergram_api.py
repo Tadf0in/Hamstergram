@@ -232,6 +232,28 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
+def delete_msg(msg_id : int) -> int :
+    """ Supprime un message envoyé, identifié par son id
+    In : msg_id : id du message
+    Out : 
+        -1 si id invalide
+        0 si le msg a bien été supprimé
+    """
+    if type(msg_id) != int :
+        return -1 # id incorrect
+    query = """SELECT content FROM MESSAGES
+    WHERE msg_id = ?;
+    """
+    if _execute(query, (msg_id,)) == [] :
+        return -1 # Message inexistant
+    else :
+        query = """DELETE FROM MESSAGES
+        WHERE msg_id = ?;
+        """
+        _execute(query, (msg_id,))
+        return 0
+
+
 def new_group(name : str, owner : str, members : list) -> int:
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
@@ -265,6 +287,7 @@ def delete_group(group_id : int) -> int :
     In : group_id : id du groupe a supprimé
     Out :
         -1 si group_id invalide
+        0 si le groupe a bien été supprimé
     """
     if type(group_id) != int :
         return -1 # id incorrect
@@ -439,7 +462,7 @@ if TESTING:
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74'] # On vérifie que ça a bien marché
     _test_passed("add_friend")
 
-    # Tests de remove_friend():
+    # Tests pour remove_friend():
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74']
@@ -454,13 +477,24 @@ if TESTING:
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
 
+    # Tests pour delete_msg() :
+    # J'attends que tu finisses ton send_msg pour faire les tests
+    assert delete_msg('Salut') == -1 # Pas int
+    assert delete_msg(0) == -1 # Message inexistant
+    assert delete_msg(1) == 0 # Good
+
+    # Tests pour new_group() : 
     assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
     assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
     assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
+
+    # Tests pour members_in_group() :
     assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
-    assert members_in_group(0) == -1
+    assert members_in_group(0) == -1 # Groupe inexistant
     _test_passed('new_group')
     _test_passed('members_in_group')
+
+    # Tests pour delete_group() :
     assert delete_group(0) == -1 # Groupe inexistant
     assert delete_group('1') == -1 # id pas int
     assert delete_group(1) == 0 # All good
