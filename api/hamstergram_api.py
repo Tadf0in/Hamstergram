@@ -1,9 +1,8 @@
 """
-API de messagerie pour Hamstramgram.
+API de messagerie.
 
 GitHub : https://github.com/Tadf0in/Hamstergram
 """
-
 import sqlite3
 
 if __name__ == '__main__':
@@ -11,6 +10,7 @@ if __name__ == '__main__':
 else :
     TESTING = False
 
+    
 def _creer_connexion(db_file : str) -> None :
     """ Crée une connexion à la base de données SQLite spécifiée par db_file.
         Le fichier est créé s'il n'existe pas.
@@ -73,24 +73,6 @@ def _user_exists(user : str) :
         return False
     else:
         return True
-
-
-def list_friends(username : str) -> list :
-    """ determine les amis d'un utilisateur
-    Out : liste des amis d'un utilisateur
-    """
-    if not isinstance(username, str):
-        return -1  # On renvoie une erreur si username n'est pas du bon format
-
-    if not _user_exists(username):
-        return -1  # Si l'utilisateur n'est pas dans la BDD on renvoie une erreur
-        
-    query = f"""
-    SELECT friend_name FROM FRIENDS
-    WHERE user_name = ?
-    """
-    friend_list = _execute(query, (username,))
-    return [friend_name[0] for friend_name in friend_list]
 
 
 def add_user(username : str, name : str, mail : str, password : str, bio : str ='') -> int :
@@ -232,6 +214,24 @@ def remove_friend(username : str, friendUsername : str) -> int :
     return 0
 
 
+def list_friends(username : str) -> list :
+    """ determine les amis d'un utilisateur
+    Out : liste des amis d'un utilisateur
+    """
+    if not isinstance(username, str):
+        return -1  # On renvoie une erreur si username n'est pas du bon format
+
+    if not _user_exists(username):
+        return -1  # Si l'utilisateur n'est pas dans la BDD on renvoie une erreur
+        
+    query = f"""
+    SELECT friend_name FROM FRIENDS
+    WHERE user_name = ?
+    """
+    friend_list = _execute(query, (username,))
+    return [friend_name[0] for friend_name in friend_list]
+
+
 def send_msg(content : str, sender : str, receiver : str = None, group_id : int = None) -> int :
     """La fonction permet d'envoyer un message dans une discussion ou un groupe
     In : content : contenu du message
@@ -267,13 +267,6 @@ def send_msg(content : str, sender : str, receiver : str = None, group_id : int 
     return 0
 
 
-def list_messages() -> int :
-    """determine la liste des messages dans la table messages
-    Out : liste des messages et de leurs infos
-    """
-    query = """SELECT * FROM MESSAGES"""
-    return _execute(query)
-
 def delete_msg(msg_id : int) -> int :
     """ Supprime un message envoyé, identifié par son id
     In : msg_id : id du message
@@ -294,6 +287,14 @@ def delete_msg(msg_id : int) -> int :
         """
         _execute(query, (msg_id,))
         return 0
+    
+ 
+def list_msg() -> int :
+    """determine la liste des messages dans la table messages
+    Out : liste des messages et de leurs infos
+    """
+    query = """SELECT * FROM MESSAGES"""
+    return _execute(query)
 
 
 def new_group(name : str, owner : str, members : list) -> int :
