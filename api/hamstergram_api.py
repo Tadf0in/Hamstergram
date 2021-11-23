@@ -461,6 +461,11 @@ if TESTING:
     assert members_in_group(0) == -1
     _test_passed('new_group')
     _test_passed('members_in_group')
+    assert delete_group(0) == -1 # Groupe inexistant
+    assert delete_group('1') == -1 # id pas int
+    assert delete_group(1) == 0 # All good
+    assert members_in_group(1) == -1 # verif que groupe supprimé
+    _test_passed('delete_group')
 
 
     # On supprime la BDD temporaire
