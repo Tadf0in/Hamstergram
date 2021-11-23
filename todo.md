@@ -17,6 +17,6 @@
 
 
 - [X] Créer un groupe
-- [ ] Supprimer un groupe
+- [X] Supprimer un groupe
 - [X] Afficher les utilisateurs faisant parti d'un groupe
 - [ ] Envoyer un message dans un groupe
