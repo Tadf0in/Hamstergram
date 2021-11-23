@@ -232,7 +232,7 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
-def new_group(name : str, owner : str, members : list):
+def new_group(name : str, owner : str, members : list) -> int:
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
          owner : username du créateur du groupe
@@ -253,12 +253,32 @@ def new_group(name : str, owner : str, members : list):
         
         people += member + ';' 
     
-    query = """ INSERT INTO GROUPES (name, members)
+    query = """ INSERT INTO GROUPS (name, members)
     VALUES (?, ?);
     """
     _execute(query, (name, people[:-1]))
     return 0
 
+
+def delete_group(group_id : int) -> int :
+    """ Supprime un groupe identifié par son id
+    In : group_id : id du groupe a supprimé
+    Out :
+        -1 si group_id invalide
+    """
+    if type(group_id) != int :
+        return -1 # id incorrect
+    query = """SELECT name FROM GROUPS
+    WHERE group_id = ?;
+    """
+    if _execute(query, (group_id,)) == [] :
+        return -1 # Groupe inexistant
+    else :
+        query = """DELETE FROM GROUPS
+        WHERE group_id = ?;
+        """
+        _execute(query, (group_id,))
+        return 0
 
 def members_in_group(group_id : int) -> list :
     """ Affiche la liste des utilisateurs présents dans un groupe
@@ -266,7 +286,7 @@ def members_in_group(group_id : int) -> list :
     Out : members : liste des utilisateurs
         -1 si id invalide
     """
-    query = """SELECT members FROM GROUPES
+    query = """SELECT members FROM GROUPS
     WHERE group_id = ?; 
     """
     people = _execute(query ,(group_id,))
@@ -311,7 +331,7 @@ if TESTING:
             FOREIGN KEY("friend_name") REFERENCES "USERS"("username")
         );
         """,
-    """CREATE TABLE "GROUPES" (
+    """CREATE TABLE "GROUPS" (
             "group_id"    INTEGER NOT NULL,
             "name"    TEXT NOT NULL,
             "members"    TEXT NOT NULL,
@@ -327,7 +347,7 @@ if TESTING:
             "date"  DATETIME DEFAULT (datetime('now','localtime')),
             FOREIGN KEY("receiver") REFERENCES "USERS"("username"),
             FOREIGN KEY("sender") REFERENCES "USERS"("username"),
-            FOREIGN KEY("group_id") REFERENCES "GROUPES"("group_id"),
+            FOREIGN KEY("group_id") REFERENCES "GROUPS"("group_id"),
             CHECK("receiver" NOT NULL OR "group_id" NOT NULL),
             PRIMARY KEY("msg_id" AUTOINCREMENT)
         );
@@ -441,6 +461,11 @@ if TESTING:
     assert members_in_group(0) == -1
     _test_passed('new_group')
     _test_passed('members_in_group')
+    assert delete_group(0) == -1 # Groupe inexistant
+    assert delete_group('1') == -1 # id pas int
+    assert delete_group(1) == 0 # All good
+    assert members_in_group(1) == -1 # verif que groupe supprimé
+    _test_passed('delete_group')
 
 
     # On supprime la BDD temporaire
