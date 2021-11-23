@@ -11,7 +11,7 @@ if __name__ == '__main__':
 else :
     TESTING = False
 
-def _creer_connexion(db_file : str):
+def _creer_connexion(db_file : str) -> None :
     """ Crée une connexion à la base de données SQLite spécifiée par db_file.
         Le fichier est créé s'il n'existe pas.
 
@@ -28,7 +28,7 @@ def _creer_connexion(db_file : str):
     return None
 
 
-def _execute(query : str, values=None):
+def _execute(query : str, values=None) :
     """
     Exécute la requête dans la bdd
     In : query : requête sql
@@ -48,7 +48,7 @@ def _execute(query : str, values=None):
     return response
 
 
-def _list_users() -> list:
+def _list_users() -> list :
     """ determine ce que contient la table USERS
     Out : liste de tous les utilisateurs et de leurs informations
     """
@@ -58,7 +58,7 @@ def _list_users() -> list:
     return (_execute(query))
 
 
-def _user_exists(user : str):
+def _user_exists(user : str) :
     """determine si un utilisateur existe
     In : user : nom d'utiliseur a verifier
     Out : True si l'utilisateur existe dans la BDD
@@ -75,7 +75,7 @@ def _user_exists(user : str):
         return True
 
 
-def list_friends(username : str):
+def list_friends(username : str) -> list :
     """ determine les amis d'un utilisateur
     Out : liste des amis d'un utilisateur
     """
@@ -93,7 +93,7 @@ def list_friends(username : str):
     return [friend_name[0] for friend_name in friend_list]
 
 
-def add_user(username : str, name : str, mail : str, password : str, bio : str ='') -> int:
+def add_user(username : str, name : str, mail : str, password : str, bio : str ='') -> int :
     """Ajoute un nouvel utilisateur
     In : username : nom d'utilisateur 
         name : nom de l'utilisateur
@@ -133,7 +133,7 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
         return -1  # On renvoie -1 car l'utilisateur existe déjà
 
     
-def remove_user(username : str) -> int:
+def remove_user(username : str) -> int :
     """ Supprime l'utilisateur 
     In : username : username d'un utilisateur inscrit
     Out :
@@ -154,7 +154,7 @@ def remove_user(username : str) -> int:
             return 0
 
         
-def is_friend(user : str, friend: str):
+def is_friend(user : str, friend: str) :
     """ Vérifie si 2 utilisateurs sont déjà amis
     In : user : Username de l'utilisateur
          friend : Username du potentiel ami
@@ -177,7 +177,7 @@ def is_friend(user : str, friend: str):
     return False # Pas amis
 
 
-def add_friend(user_name : str, friend_name : str) -> int:
+def add_friend(user_name : str, friend_name : str) -> int :
     """ Ajoute un ami à un utilisateur
     in : user_name : Username de l'utilisateur
          friend_name : Username de l'ami à ajouter
@@ -200,7 +200,7 @@ def add_friend(user_name : str, friend_name : str) -> int:
         return 0          
 
     
-def remove_friend(username : str, friendUsername : str) -> int:
+def remove_friend(username : str, friendUsername : str) -> int :
     """ La fonction supprime un ami
     In : username = nom de l'utilisateur qui souhaite supprimer un ami
         friendUsername : nom de l'ami en question
@@ -232,7 +232,7 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
-def send_msg(content : str, sender : str, receiver : str = None, group_id : int = None) -> int:
+def send_msg(content : str, sender : str, receiver : str = None, group_id : int = None) -> int :
     """La fonction permet d'envoyer un message dans une discussion ou un groupe
     In : content : contenu du message
          sender : username de l'expéditeur
@@ -267,13 +267,12 @@ def send_msg(content : str, sender : str, receiver : str = None, group_id : int 
     return 0
 
 
-def list_messages() -> int:
+def list_messages() -> int :
     """determine la liste des messages dans la table messages
     Out : liste des messages et de leurs infos
     """
     query = """SELECT * FROM MESSAGES"""
     return _execute(query)
-
 
 def delete_msg(msg_id : int) -> int :
     """ Supprime un message envoyé, identifié par son id
@@ -297,7 +296,7 @@ def delete_msg(msg_id : int) -> int :
         return 0
 
 
-def new_group(name : str, owner : str, members : list) -> int:
+def new_group(name : str, owner : str, members : list) -> int :
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
          owner : username du créateur du groupe
@@ -525,11 +524,11 @@ if TESTING:
     assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
     assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
     assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
+    _test_passed('new_group')
 
     # Tests pour members_in_group() :
     assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
     assert members_in_group(0) == -1 # Groupe inexistant
-    _test_passed('new_group')
     _test_passed('members_in_group')
 
     # Tests pour delete_group() :
@@ -540,7 +539,7 @@ if TESTING:
     _test_passed('delete_group')
 
     # Test pour send_msg():
-    # (On ne peut pas modifier que la relation n'est pas modifiée car ce qu'elle contient dépend de l'heure au moment du test)
+    # (On ne peut pas vérifier que la relation n'est pas modifiée car ce qu'elle contient dépend de l'heure au moment du test)
     # On vérifie que la fonction renvoie une erreur ) si :
     # un ou plusieurs arguments n'est pas du bon type :
     assert send_msg(1, 1) == -1
@@ -556,16 +555,13 @@ if TESTING:
     # Si toutes les conditions sont respectées, on vérifie que la fonction en renvoie pas d'erreur pour un groupe et en privé
     assert send_msg("Salut louis", "ninobg74", receiver="JexisteDeja") == 0
     assert send_msg("Salut les gens", "ninobg74", group_id=2) == 0
-
     _test_passed('send_msg')
 
     # Tests pour delete_msg() :
-    # J'attends que tu finisses ton send_msg pour faire les tests
     assert delete_msg('Salut') == -1 # Pas int
     assert delete_msg(0) == -1 # Message inexistant
     assert delete_msg(1) == 0 # Good
     _test_passed('delete_msg')
-
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
