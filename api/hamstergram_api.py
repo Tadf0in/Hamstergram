@@ -232,7 +232,7 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
-def new_group(name : str, owner : str, members : list):
+def new_group(name : str, owner : str, members : list) -> int:
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
          owner : username du créateur du groupe
