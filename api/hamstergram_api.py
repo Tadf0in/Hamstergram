@@ -108,6 +108,8 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
     if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str) or not isinstance(bio, str):
         return -1  # si jamais le type n'es pas bon, on renvoie une erreur
 
+    username.replace(";", "")
+
     if not _user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
         query = f"""
         SELECT name FROM USERS
@@ -230,17 +232,139 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
-def send_msg(content : str, sender : str, date : str, receiver : str = None, group_id : int = None) -> int:
+def send_msg(content : str, sender : str, receiver : str = None, group_id : int = None) -> int:
     """La fonction permet d'envoyer un message dans une discussion ou un groupe
     In : content : contenu du message
          sender : username de l'expéditeur
-         date : date au format datetime
          receiver : username du destinataire (non utilisé dans le cas des groupes)
          group_id : id du groupe dans lequel le message est envoyé (non utilisé dans le cas des discussions privées)
     Out : -1 en cas d'erreur ou de paramètre invalide
            0 si tout s'est bien déroulé
     """
-    pass
+    if not isinstance(content, str) or not isinstance(sender, str) or (not isinstance(receiver, (str)) and receiver is not None) or \
+        (not isinstance(group_id, int) and group_id is not None): 
+        return -1  # Les types ne sont pas respectés
+
+    if sender == receiver:
+        return -1  # le destinataire et l'expediteur sont la même personne
+    
+    if (receiver is not None and group_id is not None) or (receiver is None and group_id is None):
+        return -1  # On tente d'entrer a la fois un id de groupe et un destinataire ou aucun des deux
+
+    if content == "":
+        return -1  # le message est vide
+
+    if not _user_exists(sender) or (receiver is not None and not _user_exists(receiver)):
+        return -1  # Un des utilisateurs n'existe pas
+
+    if group_id is None:
+        query = """INSERT INTO MESSAGES (content, sender, receiver) VALUES (?,?,?)"""
+        _execute(query, (content, sender, receiver))
+    else:
+        query = """INSERT INTO MESSAGES (content, sender, group_id) VALUES (?,?,?)"""
+        _execute(query, (content, sender, group_id))
+    
+    return 0
+
+
+def list_messages() -> int:
+    """determine la liste des messages dans la table messages
+    Out : liste des messages et de leurs infos
+    """
+    query = """SELECT * FROM MESSAGES"""
+    return _execute(query)
+
+
+def delete_msg(msg_id : int) -> int :
+    """ Supprime un message envoyé, identifié par son id
+    In : msg_id : id du message
+    Out : 
+        -1 si id invalide
+        0 si le msg a bien été supprimé
+    """
+    if type(msg_id) != int :
+        return -1 # id incorrect
+    query = """SELECT content FROM MESSAGES
+    WHERE msg_id = ?;
+    """
+    if _execute(query, (msg_id,)) == [] :
+        return -1 # Message inexistant
+    else :
+        query = """DELETE FROM MESSAGES
+        WHERE msg_id = ?;
+        """
+        _execute(query, (msg_id,))
+        return 0
+
+
+def new_group(name : str, owner : str, members : list) -> int:
+    """ Créer un nouveau groupe avec au moins 3 participants
+    In : name : Nom du groupe
+         owner : username du créateur du groupe
+         members : liste des usernames des membres présents dans le groupe
+    Out :
+        -1 si un username est invalide ou si moins de 3
+        0 si le groupe a bien été crée
+    """
+    if len(members) < 2 or type(owner) != str or not _user_exists(owner) :
+        return -1 # Pas assez ou owner invalide
+
+    people = owner + ';'
+    for member in members :
+        if type(member) != str :
+            return -1 # Username d'un membre pas str
+        elif not _user_exists(member) :
+            return -1 # Username d'un membre invalide
+        
+        people += member + ';' 
+    
+    query = """ INSERT INTO GROUPS (name, members)
+    VALUES (?, ?);
+    """
+    _execute(query, (name, people[:-1]))
+    return 0
+
+
+def delete_group(group_id : int) -> int :
+    """ Supprime un groupe identifié par son id
+    In : group_id : id du groupe a supprimé
+    Out :
+        -1 si group_id invalide
+        0 si le groupe a bien été supprimé
+    """
+    if type(group_id) != int :
+        return -1 # id incorrect
+    query = """SELECT name FROM GROUPS
+    WHERE group_id = ?;
+    """
+    if _execute(query, (group_id,)) == [] :
+        return -1 # Groupe inexistant
+    else :
+        query = """DELETE FROM GROUPS
+        WHERE group_id = ?;
+        """
+        _execute(query, (group_id,))
+        return 0
+
+
+def members_in_group(group_id : int) -> list :
+    """ Affiche la liste des utilisateurs présents dans un groupe
+    In : group_id : id du groupe
+    Out : members : liste des utilisateurs
+        -1 si id invalide
+    """
+    query = """SELECT members FROM GROUPS
+    WHERE group_id = ?; 
+    """
+    people = _execute(query ,(group_id,))
+    if people == [] :
+        return -1 # id invalide
+    else :
+        people = people[0][0]
+    members = []
+    for member in people.split(";") :
+        members.append(member)
+    return sorted(members)
 
 
 def _test_passed(function_name):
@@ -258,36 +382,42 @@ if TESTING:
     # la methode execute de sqlite 3)
     create_tables = [
     """CREATE TABLE "USERS" (
-            "username" TEXT  NOT NULL ,
-            "name" TEXT  NOT NULL ,
-            "mail" TEXT  NOT NULL ,
-            "password" TEXT  NOT NULL ,
-            "bio" TEXT  NULL ,
-            CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
-            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail"));
+            "username"    TEXT NOT NULL,
+            "name"    TEXT NOT NULL,
+            "mail"    TEXT NOT NULL UNIQUE,
+            "password"    TEXT NOT NULL,
+            "bio"    TEXT NULL,
+            PRIMARY KEY("username")
+        );
         """,
-    """CREATE TABLE FRIENDS (
-            "user_name" TEXT  NOT NULL ,
-            "friend_name" TEXT  NOT NULL ,
-            CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
-            CONSTRAINT "fk_user_name" FOREIGN KEY ("user_name") REFERENCES USERS("username")
-            CONSTRAINT "fk_friend_name" FOREIGN KEY ("friend_name") REFERENCES USERS("username"))
+    """CREATE TABLE "FRIENDS" (
+            "user_name"    TEXT NOT NULL,
+            "friend_name"    TEXT NOT NULL,
+            PRIMARY KEY("user_name","friend_name"),
+            FOREIGN KEY("user_name") REFERENCES "USERS"("username"),
+            FOREIGN KEY("friend_name") REFERENCES "USERS"("username")
+        );
         """,
-    """CREATE TABLE GROUPS (
-        "group_id" INTEGER NOT NULL,
-        CONSTRAINT "pk_GROUPS" PRIMARY KEY ("group_id" AUTOINCREMENT))
+    """CREATE TABLE "GROUPS" (
+            "group_id"    INTEGER NOT NULL,
+            "name"    TEXT NOT NULL,
+            "members"    TEXT NOT NULL,
+            PRIMARY KEY("group_id" AUTOINCREMENT)
+        );
         """,
-    """CREATE TABLE MESSAGES (
-            "msg_id" INTEGER NOT NULL,
-            "content" VARCHAR(1000) NOT NULL,
-            "sender" TEXT NOT NULL,
-            "receiver" TEXT NULL,
-            "group_id" INT NULL,
-            "date" DATETIME,
-            CONSTRAINT "pk_MESSAGES" PRIMARY KEY ("msg_id" AUTOINCREMENT)
-            CONSTRAINT "fk_sender" FOREIGN KEY ("sender") REFERENCES USERS("username")
-            CONSTRAINT "fk_receiver" FOREIGN KEY ("receiver") REFERENCES USERS("username")
-            CONSTRAINT "fk_group_id" FOREIGN KEY ("group_id") REFERENCES GROUPS("group_id"))
+    """CREATE TABLE "MESSAGES" (
+            "msg_id"    INTEGER NOT NULL,
+            "content"    VARCHAR(1000) NOT NULL,
+            "sender"    TEXT NOT NULL,
+            "receiver"    TEXT NULL,
+            "group_id"    INTEGER NULL,
+            "date"  DATETIME DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY("receiver") REFERENCES "USERS"("username"),
+            FOREIGN KEY("sender") REFERENCES "USERS"("username"),
+            FOREIGN KEY("group_id") REFERENCES "GROUPS"("group_id"),
+            CHECK("receiver" NOT NULL OR "group_id" NOT NULL),
+            PRIMARY KEY("msg_id" AUTOINCREMENT)
+        );
         """]
     
     for create_table in create_tables:
@@ -298,7 +428,7 @@ if TESTING:
     ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')""")
     _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
-    _execute("""INSERT INTO MESSAGES (content, sender, receiver, date) VALUES ('Salut slaut', 'JexisteDeja', 'ninobg74', '20211122 12:00:00')""")
+    _execute("""INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")""")
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
@@ -376,7 +506,7 @@ if TESTING:
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74'] # On vérifie que ça a bien marché
     _test_passed("add_friend")
 
-    # Tests de remove_friend():
+    # Tests pour remove_friend():
     # On vérifie que si l'argument n'est pas du bon type, la fonction renvoie une erreur et la liste d'amis n'est pas modifiée
     assert remove_friend(1, 1) == -1
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi','ninobg74']
@@ -391,22 +521,50 @@ if TESTING:
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
 
-    # Test pour send_msg():
-    # On vérifie que la fonction renvoie une erreur (et que la BDD n'est pas modifiée) si :
-    # un ou plusieurs arguments n'est pas du bon type :
-    assert send_msg(1, 1, 1) == -1
-    # l'expéditeur est le même que le destinataire :
-    assert send_msg("Salut", "ninobg74", "unesuperdate", receiver='ninobg74') == -1
-    # On tente de rentrer a la fois un nom de destinataire et un id de groupe:
-    assert send_msg("Salut", "ninobg74", "20210221 13:58", receiver='JexisteDeja', group_id='28484389') == -1
-    # l'heure n'est pas au bon format :
-    assert send_msg("Salut", "JexisteDeja", "MauvaisFormat", receiver="ninobg74") == -1
-    # le message est vide :
-    assert send_msg("", "ninobg74", "20210221 13:58", receiver="JexisteDeja") == -1
-    # un ou les utilisateurs n'existent pas :
-    assert send_msg("Salut", "JeNexistePas", "20210221 13:58", receiver="JexisteDeja") == -1
-    assert send_msg("Salut", "JexisteDeja", "20210221 13:58", receiver="JeNexistePas") == -1
+    # Tests pour new_group() : 
+    assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
+    assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
+    assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
 
+    # Tests pour members_in_group() :
+    assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
+    assert members_in_group(0) == -1 # Groupe inexistant
+    _test_passed('new_group')
+    _test_passed('members_in_group')
+
+    # Tests pour delete_group() :
+    assert delete_group(0) == -1 # Groupe inexistant
+    assert delete_group('1') == -1 # id pas int
+    assert delete_group(1) == 0 # All good
+    assert members_in_group(1) == -1 # verif que groupe supprimé
+    _test_passed('delete_group')
+
+    # Test pour send_msg():
+    # (On ne peut pas modifier que la relation n'est pas modifiée car ce qu'elle contient dépend de l'heure au moment du test)
+    # On vérifie que la fonction renvoie une erreur ) si :
+    # un ou plusieurs arguments n'est pas du bon type :
+    assert send_msg(1, 1) == -1
+    # l'expéditeur est le même que le destinataire :
+    assert send_msg("Salut", "ninobg74", receiver='ninobg74') == -1
+    # On tente de rentrer a la fois un nom de destinataire et un id de groupe:
+    assert send_msg("Salut", "ninobg74", receiver='JexisteDeja', group_id='28484389') == -1
+    # le message est vide :
+    assert send_msg("", "ninobg74", receiver="JexisteDeja") == -1
+    # un ou les utilisateurs n'existent pas :
+    assert send_msg("Salut", "JeNexistePas", receiver="JexisteDeja") == -1
+    assert send_msg("Salut", "JexisteDeja", receiver="JeNexistePas") == -1
+    # Si toutes les conditions sont respectées, on vérifie que la fonction en renvoie pas d'erreur pour un groupe et en privé
+    assert send_msg("Salut louis", "ninobg74", receiver="JexisteDeja") == 0
+    assert send_msg("Salut les gens", "ninobg74", group_id=2) == 0
+
+    _test_passed('send_msg')
+
+    # Tests pour delete_msg() :
+    # J'attends que tu finisses ton send_msg pour faire les tests
+    assert delete_msg('Salut') == -1 # Pas int
+    assert delete_msg(0) == -1 # Message inexistant
+    assert delete_msg(1) == 0 # Good
+    _test_passed('delete_msg')
 
 
     # On supprime la BDD temporaire
