@@ -72,7 +72,7 @@ def _user_exists(user : str):
     if _execute(query, (user,)) == []:
         return False
     else:
-        return True)
+        return True
 
 
 def list_friends(username : str):
