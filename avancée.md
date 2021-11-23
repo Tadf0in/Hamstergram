@@ -21,6 +21,7 @@ Envoyer un message à quelqu'un ou dans un groupe.
 - fonction add_friend() pour ajouter quelqu'un en ami
 - fonction new_group() pour créer un nouveau groupe
 - fonction members_in_group() pour voir la liste des utilisateurs présent dans un groupe
+- fonction delete_group() pour supprimer un groupe déjà créé
 
 
 #### Schéma relationnel :
