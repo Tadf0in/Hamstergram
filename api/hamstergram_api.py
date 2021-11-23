@@ -108,6 +108,8 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
     if not isinstance(username, str) or not isinstance(name, str) or not isinstance(mail, str) or not isinstance(password, str) or not isinstance(bio, str):
         return -1  # si jamais le type n'es pas bon, on renvoie une erreur
 
+    username.replace(";", "")
+
     if not _user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
         query = f"""
         SELECT name FROM USERS
@@ -230,6 +232,54 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
+def new_group(name : str, owner : str, members : list):
+    """ Créer un nouveau groupe avec au moins 3 participants
+    In : name : Nom du groupe
+         owner : username du créateur du groupe
+         members : liste des usernames des membres présents dans le groupe
+    Out :
+        -1 si un username est invalide ou si moins de 3
+        0 si le groupe a bien été crée
+    """
+    if len(members) < 2 or type(owner) != str or not _user_exists(owner) :
+        return -1 # Pas assez ou owner invalide
+
+    people = owner + ';'
+    for member in members :
+        if type(member) != str :
+            return -1 # Username d'un membre pas str
+        elif not _user_exists(member) :
+            return -1 # Username d'un membre invalide
+        
+        people += member + ';' 
+    
+    query = """ INSERT INTO GROUPES (name, members)
+    VALUES (?, ?);
+    """
+    _execute(query, (name, people[:-1]))
+    return 0
+
+
+def members_in_group(group_id : int) -> list :
+    """ Affiche la liste des utilisateurs présents dans un groupe
+    In : group_id : id du groupe
+    Out : members : liste des utilisateurs
+        -1 si id invalide
+    """
+    query = """SELECT members FROM GROUPES
+    WHERE group_id = ?; 
+    """
+    people = _execute(query ,(group_id,))
+    if people == [] :
+        return -1 # id invalide
+    else :
+        people = people[0][0]
+    members = []
+    for member in people.split(";") :
+        members.append(member)
+    return sorted(members)
+
+
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
@@ -245,36 +295,42 @@ if TESTING:
     # la methode execute de sqlite 3)
     create_tables = [
     """CREATE TABLE "USERS" (
-            "username" TEXT  NOT NULL ,
-            "name" TEXT  NOT NULL ,
-            "mail" TEXT  NOT NULL ,
-            "password" TEXT  NOT NULL ,
-            "bio" TEXT  NULL ,
-            CONSTRAINT "pk_USERS" PRIMARY KEY ("username"),
-            CONSTRAINT "uk_USERS_mail" UNIQUE ("mail"));
+            "username"    TEXT NOT NULL,
+            "name"    TEXT NOT NULL,
+            "mail"    TEXT NOT NULL UNIQUE,
+            "password"    TEXT NOT NULL,
+            "bio"    TEXT NULL,
+            PRIMARY KEY("username")
+        );
         """,
-    """CREATE TABLE FRIENDS (
-            "user_name" TEXT  NOT NULL ,
-            "friend_name" TEXT  NOT NULL ,
-            CONSTRAINT "pk_FRIENDS" PRIMARY KEY ("user_name","friend_name")
-            CONSTRAINT "fk_user_name" FOREIGN KEY ("user_name") REFERENCES USERS("username")
-            CONSTRAINT "fk_friend_name" FOREIGN KEY ("friend_name") REFERENCES USERS("username"))
+    """CREATE TABLE "FRIENDS" (
+            "user_name"    TEXT NOT NULL,
+            "friend_name"    TEXT NOT NULL,
+            PRIMARY KEY("user_name","friend_name"),
+            FOREIGN KEY("user_name") REFERENCES "USERS"("username"),
+            FOREIGN KEY("friend_name") REFERENCES "USERS"("username")
+        );
         """,
-    """CREATE TABLE GROUPS (
-        "group_id" INTEGER NOT NULL,
-        CONSTRAINT "pk_GROUPS" PRIMARY KEY ("group_id" AUTOINCREMENT))
+    """CREATE TABLE "GROUPES" (
+            "group_id"    INTEGER NOT NULL,
+            "name"    TEXT NOT NULL,
+            "members"    TEXT NOT NULL,
+            PRIMARY KEY("group_id" AUTOINCREMENT)
+        );
         """,
-    """CREATE TABLE MESSAGES (
-            "msg_id" INTEGER NOT NULL,
-            "content" VARCHAR(1000) NOT NULL,
-            "sender" TEXT NOT NULL,
-            "receiver" TEXT NULL,
-            "group_id" INT NULL,
-            "date" DATETIME,
-            CONSTRAINT "pk_MESSAGES" PRIMARY KEY ("msg_id" AUTOINCREMENT)
-            CONSTRAINT "fk_sender" FOREIGN KEY ("sender") REFERENCES USERS("username")
-            CONSTRAINT "fk_receiver" FOREIGN KEY ("receiver") REFERENCES USERS("username")
-            CONSTRAINT "fk_group_id" FOREIGN KEY ("group_id") REFERENCES GROUPS("group_id"))
+    """CREATE TABLE "MESSAGES" (
+            "msg_id"    INTEGER NOT NULL,
+            "content"    VARCHAR(1000) NOT NULL,
+            "sender"    TEXT NOT NULL,
+            "receiver"    TEXT NULL,
+            "group_id"    INTEGER NULL,
+            "date"  DATETIME DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY("receiver") REFERENCES "USERS"("username"),
+            FOREIGN KEY("sender") REFERENCES "USERS"("username"),
+            FOREIGN KEY("group_id") REFERENCES "GROUPES"("group_id"),
+            CHECK("receiver" NOT NULL OR "group_id" NOT NULL),
+            PRIMARY KEY("msg_id" AUTOINCREMENT)
+        );
         """]
     
     for create_table in create_tables:
@@ -377,6 +433,15 @@ if TESTING:
     assert remove_friend('JexisteDeja', 'ninobg74') == 0
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
+
+    assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
+    assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
+    assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
+    assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
+    assert members_in_group(0) == -1
+    _test_passed('new_group')
+    _test_passed('members_in_group')
+
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
