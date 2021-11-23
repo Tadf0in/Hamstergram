@@ -232,6 +232,28 @@ def remove_friend(username : str, friendUsername : str) -> int:
     return 0
 
 
+def delete_msg(msg_id : int) -> int :
+    """ Supprime un message envoyé, identifié par son id
+    In : msg_id : id du message
+    Out : 
+        -1 si id invalide
+        0 si le msg a bien été supprimé
+    """
+    if type(msg_id) != int :
+        return -1 # id incorrect
+    query = """SELECT content FROM MESSAGES
+    WHERE msg_id = ?;
+    """
+    if _execute(query, (msg_id,)) == [] :
+        return -1 # Message inexistant
+    else :
+        query = """DELETE FROM MESSAGES
+        WHERE msg_id = ?;
+        """
+        _execute(query, (msg_id,))
+        return 0
+
+
 def new_group(name : str, owner : str, members : list) -> int:
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
@@ -265,6 +287,7 @@ def delete_group(group_id : int) -> int :
     In : group_id : id du groupe a supprimé
     Out :
         -1 si group_id invalide
+        0 si le groupe a bien été supprimé
     """
     if type(group_id) != int :
         return -1 # id incorrect
