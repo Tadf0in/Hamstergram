@@ -477,12 +477,6 @@ if TESTING:
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
 
-    # Tests pour delete_msg() :
-    # J'attends que tu finisses ton send_msg pour faire les tests
-    assert delete_msg('Salut') == -1 # Pas int
-    assert delete_msg(0) == -1 # Message inexistant
-    assert delete_msg(1) == 0 # Good
-
     # Tests pour new_group() : 
     assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
     assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
@@ -500,6 +494,13 @@ if TESTING:
     assert delete_group(1) == 0 # All good
     assert members_in_group(1) == -1 # verif que groupe supprimé
     _test_passed('delete_group')
+
+    # Tests pour delete_msg() :
+    # J'attends que tu finisses ton send_msg pour faire les tests
+    assert delete_msg('Salut') == -1 # Pas int
+    assert delete_msg(0) == -1 # Message inexistant
+    assert delete_msg(1) == 0 # Good
+    _test_passed('delete_msg')
 
 
     # On supprime la BDD temporaire
