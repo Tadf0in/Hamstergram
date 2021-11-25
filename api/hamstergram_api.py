@@ -367,6 +367,14 @@ def members_in_group(group_id : int) -> list :
     return sorted(members)
 
 
+def delete_story(story_id : int) -> int:
+    """ Permet de supprimer une story
+    In : story_id : id de la story a supprimer
+    Out : -1 si erreur ou argument invalide, 0 sinon
+    """
+    pass
+
+
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
