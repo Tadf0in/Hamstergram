@@ -367,6 +367,34 @@ def members_in_group(group_id : int) -> list :
     return sorted(members)
 
 
+def add_story(user : str, image : str) -> int :
+    """ Ajoute une story
+    In : user : username de celui qui poste la story
+         image : url de l'image affichée en story
+    Out :
+        -1 si paramètres invalides
+        0 si story bien postée
+    """
+    if type(image) != str or type(user) != str or not _user_exists(user) :
+        return -1 # Paramètres invalides
+
+    query = """SELECT story_id FROM STORIES
+    ORDER BY story_id DESC
+    """
+    id = _execute(query)
+    if id == [] :
+        id = 1
+    else :
+        id = id[0][0] + 1
+
+    url = f'Stories/{id}.png'
+
+    query = """ INSERT INTO STORIES (story_id, poster, image)
+    VALUES (?, ?, ?);
+    """
+    _execute(query, (id, user, url)) # Ajout de l'id au cas ou la dernière story a été supprimée
+    return 0
+
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
@@ -418,6 +446,17 @@ if TESTING:
             CHECK("receiver" NOT NULL OR "group_id" NOT NULL),
             PRIMARY KEY("msg_id" AUTOINCREMENT)
         );
+        """,
+        """
+        CREATE TABLE "STORIES" (
+            "story_id"	INTEGER NOT NULL,
+            "poster"	TEXT NOT NULL,
+            "image"	TEXT NOT NULL,
+            "views"	INTEGER NOT NULL DEFAULT 0,
+            "date"	DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
+            PRIMARY KEY("story_id" AUTOINCREMENT),
+            FOREIGN KEY("poster") REFERENCES "USERS"("username")
+        );
         """]
     
     for create_table in create_tables:
@@ -429,6 +468,9 @@ if TESTING:
     _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
     _execute("""INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")""")
+    _execute("""INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'test.png')""")
+    _execute("""INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'teszet.png')""")
+
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
@@ -563,6 +605,8 @@ if TESTING:
     assert delete_msg(0) == -1 # Message inexistant
     assert delete_msg(1) == 0 # Good
     _test_passed('delete_msg')
+
+    add_story('ninobg74', 'test.png')
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
