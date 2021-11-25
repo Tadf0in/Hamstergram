@@ -372,7 +372,13 @@ def delete_story(story_id : int) -> int:
     In : story_id : id de la story a supprimer
     Out : -1 si erreur ou argument invalide, 0 sinon
     """
-    pass
+    if isinstance(story_id, int):  # On vérifie le type de l'argument
+        query = """SELECT story_id FROM STORIES WHERE story_id=?"""
+        if _execute(query, (story_id,)) != []:  # On vérifie que la story existe
+            query = """DELETE FROM STORIES WHERE story_id=?"""
+            _execute(query, (story_id,))  # On supprime la story 
+            return 0  # On renvoie 0 car tout s'est bien passé
+    return -1  # Erreur ou arguments invalides
 
 
 def _test_passed(function_name):
@@ -593,10 +599,11 @@ if TESTING:
     # Tests pour add_story():
     # Faudrait que tu rajoute une story pour mon test de delete story
 
-    # # Tests pour delete_story():
-    # assert delete_story("salut") == -1
-    # assert delete_story(1000) == -1
-    # assert delete_story(2) == 0
+    # Tests pour delete_story():
+    assert delete_story("salut") == -1
+    assert delete_story(1000) == -1
+    assert delete_story(1) == 0
+    _test_passed("delete_story")
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
