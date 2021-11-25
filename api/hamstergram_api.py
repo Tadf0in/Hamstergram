@@ -426,42 +426,60 @@ if TESTING:
             CHECK("receiver" NOT NULL OR "group_id" NOT NULL),
             PRIMARY KEY("msg_id" AUTOINCREMENT)
         );
+        """,
+    """CREATE TABLE "STORIES" (
+        "story_id" INTEGER NOT NULL,
+        "poster" TEXT NOT NULL,
+        "url" TEXT NOT NULL, 
+        "date" DATETIME DEFAULT (datetime('now','localtime')),
+        PRIMARY KEY("story_id" AUTOINCREMENT),
+        FOREIGN KEY("poster") REFERENCES "USERS"("username")
+    );
+        """,]
+
+    # On ajoutes des données dans les relations
+    inserts = [
+        """INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
+    ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
+    ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')
+        """,
+    """INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
+        """,
+    """INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")
+        """,
+    """INSERT INTO STORIES (poster, url) VALUES ("JexisteDeja", "https://15rf562os5r61q4tvf2630fw-wpengine.netdna-ssl.com/wp-content/uploads/2018/01/jupyterhub-logo.png")
         """]
     
+    # On éxécute le code sql
     for create_table in create_tables:
         _execute(create_table)
-    # On ajoutes des données dans les relations
-    _execute("""INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
-    ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
-    ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')""")
-    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
-    """)
-    _execute("""INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")""")
+    for insert in inserts:
+        _execute(insert)
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
-    _test_passed("_list_users")
+    _test_passed("list_users")
     # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur et que la table USERS n'a pas été modifiée
     assert add_user(1, 1, 1, 1) == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'essayer d'entrer un utilisateur avec un nom d'utilisateur déjà existant renvoie une erreur et que que la table USERS n'a pas été modifiée
     assert add_user('JexisteDeja', 'eoiokdeo', 'pasmoi@mail.fr', 'deded') == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'essayer d'entrer un utilisateur dont l'adresse email est déjà utilisée renvoie une erreur et que la table USERS n'a donc pas été modifiée
     assert add_user('JexistePas', 'MoiOnSenFiche', 'existe.deja@mail.fr', 'MoiAussiOnSenFiche', None) == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'ajouter un utilisateur donc l'adresse email et le nom d'utilisateur n'existent pas ne renvoie pas d'erreur et  que la table USERS a été modifiée en conséquent
     assert add_user('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty') == 0
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
@@ -470,19 +488,19 @@ if TESTING:
     # Tests pour remove_user() :
     # On vérifie que passer un argument de mauvais type renvoie une erreur et ne modifie pas la table USERS
     assert remove_user(1) == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur inexistant renvoie une erreur et ne modifie pas la table USERS
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur existant ne renvoie pas d'erreur et modifie bien la table USERS
     assert remove_user('NouvelUtilisateur') == 0
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     _test_passed("remove_user")
@@ -571,6 +589,14 @@ if TESTING:
     assert delete_msg(0) == -1 # Message inexistant
     assert delete_msg(1) == 0 # Good
     _test_passed('delete_msg')
+
+    # Tests pour add_story():
+    # Faudrait que tu rajoute une story pour mon test de delete story
+
+    # # Tests pour delete_story():
+    # assert delete_story("salut") == -1
+    # assert delete_story(1000) == -1
+    # assert delete_story(2) == 0
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
