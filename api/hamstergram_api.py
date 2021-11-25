@@ -48,33 +48,6 @@ def _execute(query : str, values=None) :
     return response
 
 
-def _list_users() -> list :
-    """ determine ce que contient la table USERS
-    Out : liste de tous les utilisateurs et de leurs informations
-    """
-    query = f"""
-    SELECT * FROM USERS
-    """
-    return (_execute(query))
-
-
-def _user_exists(user : str) :
-    """determine si un utilisateur existe
-    In : user : nom d'utiliseur a verifier
-    Out : True si l'utilisateur existe dans la BDD
-          False sinon
-          -1 si le paramètre est invalide
-    """
-    if not isinstance(user, str):
-        return -1
-
-    query = """SELECT username FROM USERS WHERE username=?"""
-    if _execute(query, (user,)) == []:
-        return False
-    else:
-        return True
-
-
 def add_user(username : str, name : str, mail : str, password : str, bio : str ='') -> int :
     """Ajoute un nouvel utilisateur
     In : username : nom d'utilisateur 
@@ -92,7 +65,7 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
 
     username.replace(";", "")
 
-    if not _user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
+    if not user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
         query = f"""
         SELECT name FROM USERS
         WHERE mail = ?;
@@ -125,7 +98,7 @@ def remove_user(username : str) -> int :
     if type(username) != str :
         return -1 # Username invalide car pas str
     else :
-        if not _user_exists(username):
+        if not user_exists(username):
             return -1 # Username invalide car non inscrit
         else :
             query = f"""
@@ -135,6 +108,33 @@ def remove_user(username : str) -> int :
             _execute(query, (username,))
             return 0
 
+
+def list_users() -> list :
+    """ determine ce que contient la table USERS
+    Out : liste de tous les utilisateurs et de leurs informations
+    """
+    query = f"""
+    SELECT * FROM USERS
+    """
+    return (_execute(query))
+
+
+def user_exists(user : str) :
+    """determine si un utilisateur existe
+    In : user : nom d'utiliseur a verifier
+    Out : True si l'utilisateur existe dans la BDD
+          False sinon
+          -1 si le paramètre est invalide
+    """
+    if not isinstance(user, str):
+        return -1
+
+    query = """SELECT username FROM USERS WHERE username=?"""
+    if _execute(query, (user,)) == []:
+        return False
+    else:
+        return True
+        
         
 def is_friend(user : str, friend: str) :
     """ Vérifie si 2 utilisateurs sont déjà amis
@@ -147,7 +147,7 @@ def is_friend(user : str, friend: str) :
     if type(user) != str or type(friend) != str :
         return -1 # Username invalide car pas str
         
-    if not _user_exists(user) or not _user_exists(friend) :
+    if not user_exists(user) or not user_exists(friend) :
         return -1 # Un des usernames est invalide
     
     friends = list_friends(user)[0]
@@ -205,7 +205,7 @@ def remove_friend(username : str, friendUsername : str) -> int :
             break
 
     # si l'utilisateur n'existe pas ou que l'autre utilisateur n'est pas notre ami, on renvoie une erreur
-    if not _user_exists(username) or not is_friend:
+    if not user_exists(username) or not is_friend:
         return -1
 
     # si toutes les conditions sont passées, on supprime l'ami et on renvoie 0
@@ -221,7 +221,7 @@ def list_friends(username : str) -> list :
     if not isinstance(username, str):
         return -1  # On renvoie une erreur si username n'est pas du bon format
 
-    if not _user_exists(username):
+    if not user_exists(username):
         return -1  # Si l'utilisateur n'est pas dans la BDD on renvoie une erreur
         
     query = f"""
@@ -254,7 +254,7 @@ def send_msg(content : str, sender : str, receiver : str = None, group_id : int 
     if content == "":
         return -1  # le message est vide
 
-    if not _user_exists(sender) or (receiver is not None and not _user_exists(receiver)):
+    if not user_exists(sender) or (receiver is not None and not user_exists(receiver)):
         return -1  # Un des utilisateurs n'existe pas
 
     if group_id is None:
@@ -306,14 +306,14 @@ def add_group(name : str, owner : str, members : list) -> int :
         -1 si un username est invalide ou si moins de 3
         0 si le groupe a bien été crée
     """
-    if len(members) < 2 or type(owner) != str or not _user_exists(owner) :
+    if len(members) < 2 or type(owner) != str or not user_exists(owner) :
         return -1 # Pas assez ou owner invalide
 
     people = owner + ';'
     for member in members :
         if type(member) != str :
             return -1 # Username d'un membre pas str
-        elif not _user_exists(member) :
+        elif not user_exists(member) :
             return -1 # Username d'un membre invalide
         
         people += member + ';' 
