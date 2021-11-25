@@ -11,10 +11,13 @@ Envoyer un message à quelqu'un ou dans un groupe.
 
 ##### Nino : 
 - fonction add_user() pour ajouter un utilisateur
+- user_exists() pour voir si un utilisateur existe
+- list_users() pour voir la liste des utilisateurs
 - fonction list_friends() pour voir sa liste d'amis
 - fonction remove_friend() pour supprimer quelqu'un en ami
 - send_msg() pour envoyer un message à quelqu'un ou dans un groupe
-- delete_msg() pour supprimer un message 
+- list_msg() pour voir la liste des messages 
+
 
 ##### Louis :
 - fonction remove_user() pour supprimer un utilisateur
@@ -23,6 +26,7 @@ Envoyer un message à quelqu'un ou dans un groupe.
 - fonction add_group() pour créer un nouveau groupe
 - fonction members_in_group() pour voir la liste des utilisateurs présent dans un groupe
 - fonction delete_group() pour supprimer un groupe déjà créé
+- delete_msg() pour supprimer un message 
 
 
 #### Schéma relationnel :
