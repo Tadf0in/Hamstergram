@@ -297,7 +297,7 @@ def list_msg() -> int :
     return _execute(query)
 
 
-def new_group(name : str, owner : str, members : list) -> int :
+def add_group(name : str, owner : str, members : list) -> int :
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
          owner : username du créateur du groupe
@@ -521,11 +521,11 @@ if TESTING:
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
 
-    # Tests pour new_group() : 
-    assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
-    assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
-    assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
-    _test_passed('new_group')
+    # Tests pour add_group() : 
+    assert add_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
+    assert add_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
+    assert add_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
+    _test_passed('add_group')
 
     # Tests pour members_in_group() :
     assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
