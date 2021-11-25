@@ -33,4 +33,3 @@ FRIENDS(<u>#user_name : TEXT, #friend_name : TEXT</u>)
 MESSAGES(<u>id : INT</u>, message : VARCHAR(1000), #sender : TEXT, #receiver : TEXT (Null), #group_id :INT (Null), date : DATETIME (Default : Current_timestamp))
 
 GROUPES(<u>group_id : INT</u>, name : TEXT, members : TEXT)
-<u>tettedtgtedgtegdtdggdtge</u>
