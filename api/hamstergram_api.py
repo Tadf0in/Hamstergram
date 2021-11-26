@@ -4,6 +4,7 @@ API de messagerie.
 GitHub : https://github.com/Tadf0in/Hamstergram
 """
 import sqlite3
+from PIL import Image # Pour les stories
 
 if __name__ == '__main__':
     TESTING = True
@@ -389,6 +390,12 @@ def add_story(user : str, image : str) -> int :
 
     url = f'Stories/{id}.png'
 
+    try :
+        img = Image.open(image) 
+        img.save(url)
+    except FileNotFoundError :
+        return -1 # Image introuvable
+
     query = """ INSERT INTO STORIES (story_id, poster, image)
     VALUES (?, ?, ?);
     """
@@ -468,8 +475,7 @@ if TESTING:
     _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
     """)
     _execute("""INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")""")
-    _execute("""INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'test.png')""")
-    _execute("""INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'teszet.png')""")
+    _execute("""INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'Stories/1.png')""")
 
 
     # Tests pour add_user() :
@@ -606,7 +612,13 @@ if TESTING:
     assert delete_msg(1) == 0 # Good
     _test_passed('delete_msg')
 
-    add_story('ninobg74', 'test.png')
+    assert add_story('InconnuAuBataillon', 'image.png') == -1 # Username invalide
+    assert add_story(74, 'test.png') == -1 # Username pas str
+    assert add_story('JexisteDeja', 12) == -1 # Image pas str
+    assert add_story('ninobg74', 'imageinexistante.png') == -1 # Image inexistante
+    assert add_story('JexisteDeja', 'Stories/1.png') == 0 # All good
+    remove('Stories/2.png')
+
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
