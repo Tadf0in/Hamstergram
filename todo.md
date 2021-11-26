@@ -15,8 +15,12 @@
 
 <br>
 
-
 - [X] Créer un groupe
 - [X] Supprimer un groupe
 - [X] Afficher les utilisateurs faisant parti d'un groupe
 - [X] Envoyer un message dans un groupe
+
+<br>
+
+- [X] Ajouter une story
+- [X] Supprimer une story
