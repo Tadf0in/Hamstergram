@@ -10,8 +10,8 @@
 
 <br>
 
-- [ ] Envoyer un message dans une discussion
-- [ ] Supprimer un message
+- [X] Envoyer un message dans une discussion
+- [X] Supprimer un message
 
 <br>
 
@@ -19,4 +19,4 @@
 - [X] Créer un groupe
 - [X] Supprimer un groupe
 - [X] Afficher les utilisateurs faisant parti d'un groupe
-- [ ] Envoyer un message dans un groupe
+- [X] Envoyer un message dans un groupe

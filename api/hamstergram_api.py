@@ -49,33 +49,6 @@ def _execute(query : str, values=None) :
     return response
 
 
-def _list_users() -> list :
-    """ determine ce que contient la table USERS
-    Out : liste de tous les utilisateurs et de leurs informations
-    """
-    query = f"""
-    SELECT * FROM USERS
-    """
-    return (_execute(query))
-
-
-def _user_exists(user : str) :
-    """determine si un utilisateur existe
-    In : user : nom d'utiliseur a verifier
-    Out : True si l'utilisateur existe dans la BDD
-          False sinon
-          -1 si le paramètre est invalide
-    """
-    if not isinstance(user, str):
-        return -1
-
-    query = """SELECT username FROM USERS WHERE username=?"""
-    if _execute(query, (user,)) == []:
-        return False
-    else:
-        return True
-
-
 def add_user(username : str, name : str, mail : str, password : str, bio : str ='') -> int :
     """Ajoute un nouvel utilisateur
     In : username : nom d'utilisateur 
@@ -93,7 +66,7 @@ def add_user(username : str, name : str, mail : str, password : str, bio : str =
 
     username.replace(";", "")
 
-    if not _user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
+    if not user_exists(username):  # On vérifie que le nom d'utilisateur n'existe pas déjà
         query = f"""
         SELECT name FROM USERS
         WHERE mail = ?;
@@ -126,7 +99,7 @@ def remove_user(username : str) -> int :
     if type(username) != str :
         return -1 # Username invalide car pas str
     else :
-        if not _user_exists(username):
+        if not user_exists(username):
             return -1 # Username invalide car non inscrit
         else :
             query = f"""
@@ -136,6 +109,33 @@ def remove_user(username : str) -> int :
             _execute(query, (username,))
             return 0
 
+
+def list_users() -> list :
+    """ determine ce que contient la table USERS
+    Out : liste de tous les utilisateurs et de leurs informations
+    """
+    query = f"""
+    SELECT * FROM USERS
+    """
+    return (_execute(query))
+
+
+def user_exists(user : str) :
+    """determine si un utilisateur existe
+    In : user : nom d'utiliseur a verifier
+    Out : True si l'utilisateur existe dans la BDD
+          False sinon
+          -1 si le paramètre est invalide
+    """
+    if not isinstance(user, str):
+        return -1
+
+    query = """SELECT username FROM USERS WHERE username=?"""
+    if _execute(query, (user,)) == []:
+        return False
+    else:
+        return True
+        
         
 def is_friend(user : str, friend: str) :
     """ Vérifie si 2 utilisateurs sont déjà amis
@@ -148,7 +148,7 @@ def is_friend(user : str, friend: str) :
     if type(user) != str or type(friend) != str :
         return -1 # Username invalide car pas str
         
-    if not _user_exists(user) or not _user_exists(friend) :
+    if not user_exists(user) or not user_exists(friend) :
         return -1 # Un des usernames est invalide
     
     friends = list_friends(user)[0]
@@ -206,7 +206,7 @@ def remove_friend(username : str, friendUsername : str) -> int :
             break
 
     # si l'utilisateur n'existe pas ou que l'autre utilisateur n'est pas notre ami, on renvoie une erreur
-    if not _user_exists(username) or not is_friend:
+    if not user_exists(username) or not is_friend:
         return -1
 
     # si toutes les conditions sont passées, on supprime l'ami et on renvoie 0
@@ -222,7 +222,7 @@ def list_friends(username : str) -> list :
     if not isinstance(username, str):
         return -1  # On renvoie une erreur si username n'est pas du bon format
 
-    if not _user_exists(username):
+    if not user_exists(username):
         return -1  # Si l'utilisateur n'est pas dans la BDD on renvoie une erreur
         
     query = f"""
@@ -255,7 +255,7 @@ def send_msg(content : str, sender : str, receiver : str = None, group_id : int 
     if content == "":
         return -1  # le message est vide
 
-    if not _user_exists(sender) or (receiver is not None and not _user_exists(receiver)):
+    if not user_exists(sender) or (receiver is not None and not user_exists(receiver)):
         return -1  # Un des utilisateurs n'existe pas
 
     if group_id is None:
@@ -298,7 +298,7 @@ def list_msg() -> int :
     return _execute(query)
 
 
-def new_group(name : str, owner : str, members : list) -> int :
+def add_group(name : str, owner : str, members : list) -> int :
     """ Créer un nouveau groupe avec au moins 3 participants
     In : name : Nom du groupe
          owner : username du créateur du groupe
@@ -307,14 +307,14 @@ def new_group(name : str, owner : str, members : list) -> int :
         -1 si un username est invalide ou si moins de 3
         0 si le groupe a bien été crée
     """
-    if len(members) < 2 or type(owner) != str or not _user_exists(owner) :
+    if len(members) < 2 or type(owner) != str or not user_exists(owner) :
         return -1 # Pas assez ou owner invalide
 
     people = owner + ';'
     for member in members :
         if type(member) != str :
             return -1 # Username d'un membre pas str
-        elif not _user_exists(member) :
+        elif not user_exists(member) :
             return -1 # Username d'un membre invalide
         
         people += member + ';' 
@@ -376,7 +376,7 @@ def add_story(user : str, image : str) -> int :
         -1 si paramètres invalides
         0 si story bien postée
     """
-    if type(image) != str or type(user) != str or not _user_exists(user) :
+    if type(image) != str or type(user) != str or not user_exists(user) :
         return -1 # Paramètres invalides
 
     query = """SELECT story_id FROM STORIES
@@ -402,6 +402,21 @@ def add_story(user : str, image : str) -> int :
     _execute(query, (id, user, url)) # Ajout de l'id au cas ou la dernière story a été supprimée
     return 0
 
+
+def delete_story(story_id : int) -> int:
+    """ Permet de supprimer une story
+    In : story_id : id de la story a supprimer
+    Out : -1 si erreur ou argument invalide, 0 sinon
+    """
+    if isinstance(story_id, int):  # On vérifie le type de l'argument
+        query = """SELECT story_id FROM STORIES WHERE story_id=?"""
+        if _execute(query, (story_id,)) != []:  # On vérifie que la story existe
+            query = """DELETE FROM STORIES WHERE story_id=?"""
+            _execute(query, (story_id,))  # On supprime la story 
+            return 0  # On renvoie 0 car tout s'est bien passé
+    return -1  # Erreur ou arguments invalides
+
+
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
@@ -416,7 +431,7 @@ if TESTING:
     # Creation des relations dans la base de données: (On est obligés de le faire en deux fois avec 
     # la methode execute de sqlite 3)
     create_tables = [
-    """CREATE TABLE "USERS" (
+        """CREATE TABLE "USERS" (
             "username"    TEXT NOT NULL,
             "name"    TEXT NOT NULL,
             "mail"    TEXT NOT NULL UNIQUE,
@@ -425,7 +440,7 @@ if TESTING:
             PRIMARY KEY("username")
         );
         """,
-    """CREATE TABLE "FRIENDS" (
+        """CREATE TABLE "FRIENDS" (
             "user_name"    TEXT NOT NULL,
             "friend_name"    TEXT NOT NULL,
             PRIMARY KEY("user_name","friend_name"),
@@ -433,14 +448,14 @@ if TESTING:
             FOREIGN KEY("friend_name") REFERENCES "USERS"("username")
         );
         """,
-    """CREATE TABLE "GROUPS" (
+        """CREATE TABLE "GROUPS" (
             "group_id"    INTEGER NOT NULL,
             "name"    TEXT NOT NULL,
             "members"    TEXT NOT NULL,
             PRIMARY KEY("group_id" AUTOINCREMENT)
         );
         """,
-    """CREATE TABLE "MESSAGES" (
+        """CREATE TABLE "MESSAGES" (
             "msg_id"    INTEGER NOT NULL,
             "content"    VARCHAR(1000) NOT NULL,
             "sender"    TEXT NOT NULL,
@@ -454,8 +469,7 @@ if TESTING:
             PRIMARY KEY("msg_id" AUTOINCREMENT)
         );
         """,
-        """
-        CREATE TABLE "STORIES" (
+        """CREATE TABLE "STORIES" (
             "story_id"	INTEGER NOT NULL,
             "poster"	TEXT NOT NULL,
             "image"	TEXT NOT NULL,
@@ -465,43 +479,51 @@ if TESTING:
             FOREIGN KEY("poster") REFERENCES "USERS"("username")
         );
         """]
+
+    # On ajoutes des données dans les relations
+    inserts = [
+        """INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
+    ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
+    ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')
+        """,
+    """INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
+        """,
+    """INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")
+        """,
+    """INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'Stories/1.png')
+        """]
     
+    # On éxécute le code sql
     for create_table in create_tables:
         _execute(create_table)
-    # On ajoutes des données dans les relations
-    _execute("""INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
-    ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
-    ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')""")
-    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
-    """)
-    _execute("""INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")""")
-    _execute("""INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'Stories/1.png')""")
-
+        
+    for insert in inserts:
+        _execute(insert)
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
-    _test_passed("_list_users")
+    _test_passed("list_users")
     # On vérifie que en passant des arguments du mauvais type, la fonction renvoie une erreur et que la table USERS n'a pas été modifiée
     assert add_user(1, 1, 1, 1) == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'essayer d'entrer un utilisateur avec un nom d'utilisateur déjà existant renvoie une erreur et que que la table USERS n'a pas été modifiée
     assert add_user('JexisteDeja', 'eoiokdeo', 'pasmoi@mail.fr', 'deded') == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'essayer d'entrer un utilisateur dont l'adresse email est déjà utilisée renvoie une erreur et que la table USERS n'a donc pas été modifiée
     assert add_user('JexistePas', 'MoiOnSenFiche', 'existe.deja@mail.fr', 'MoiAussiOnSenFiche', None) == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     # On vérifie qu'ajouter un utilisateur donc l'adresse email et le nom d'utilisateur n'existent pas ne renvoie pas d'erreur et  que la table USERS a été modifiée en conséquent
     assert add_user('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty') == 0
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
@@ -510,19 +532,19 @@ if TESTING:
     # Tests pour remove_user() :
     # On vérifie que passer un argument de mauvais type renvoie une erreur et ne modifie pas la table USERS
     assert remove_user(1) == -1
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur inexistant renvoie une erreur et ne modifie pas la table USERS
     assert remove_user('JeNexistePas') == -1 # JeNexistePas n'est pas présent dans la bdd
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None),
                             ('NouvelUtilisateur', 'dedede', 'nouveau@gmail.com', 'azerty', None)]
     # On vérifie que supprimer un utilisateur existant ne renvoie pas d'erreur et modifie bien la table USERS
     assert remove_user('NouvelUtilisateur') == 0
-    assert _list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
+    assert list_users() == [('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123', None),
                             ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon', None),
                             ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut', None)]
     _test_passed("remove_user")
@@ -569,11 +591,11 @@ if TESTING:
     assert list_friends('JexisteDeja') == ['JeSuisDejaAmi']
     _test_passed('remove_friend')
 
-    # Tests pour new_group() : 
-    assert new_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
-    assert new_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
-    assert new_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
-    _test_passed('new_group')
+    # Tests pour add_group() : 
+    assert add_group('Groupe de raisin', 'ninobg74', ['JexisteDeja']) == -1 # Que 2 participants => discussion normale pas groupe
+    assert add_group('Télétubbies', 'Tinky Winky', ['Dipsy','Lala']) == -1 # Usernames inexistants
+    assert add_group('Restez groupir', 'ninobg74', ['JexisteDeja','JeSuisDejaAmi']) == 0 # All good
+    _test_passed('add_group')
 
     # Tests pour members_in_group() :
     assert members_in_group(1) == ['JeSuisDejaAmi', 'JexisteDeja', 'ninobg74']
@@ -612,12 +634,21 @@ if TESTING:
     assert delete_msg(1) == 0 # Good
     _test_passed('delete_msg')
 
+    # Tests pour add_story():
     assert add_story('InconnuAuBataillon', 'image.png') == -1 # Username invalide
     assert add_story(74, 'test.png') == -1 # Username pas str
     assert add_story('JexisteDeja', 12) == -1 # Image pas str
     assert add_story('ninobg74', 'imageinexistante.png') == -1 # Image inexistante
     assert add_story('JexisteDeja', 'Stories/1.png') == 0 # All good
+    t = input('')
     remove('Stories/2.png')
+    _test_passed("add_story")
+
+    # Tests pour delete_story():
+    assert delete_story("salut") == -1
+    assert delete_story(1000) == -1
+    assert delete_story(1) == 0
+    _test_passed("delete_story")
 
 
     # On supprime la BDD temporaire
