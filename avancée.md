@@ -17,6 +17,7 @@ Envoyer un message à quelqu'un ou dans un groupe.
 - fonction remove_friend() pour supprimer quelqu'un en ami
 - send_msg() pour envoyer un message à quelqu'un ou dans un groupe
 - list_msg() pour voir la liste des messages 
+- delete_story() pour supprimer une story
 
 
 ##### Louis :
@@ -27,6 +28,7 @@ Envoyer un message à quelqu'un ou dans un groupe.
 - fonction members_in_group() pour voir la liste des utilisateurs présent dans un groupe
 - fonction delete_group() pour supprimer un groupe déjà créé
 - delete_msg() pour supprimer un message 
+- add_story() pour ajouter une story
 
 
 #### Schéma relationnel :
@@ -34,6 +36,8 @@ USERS(<u>username : TEXT</u>, name : TEXT, mail : TEXT (Unique), password : TEXT
 
 FRIENDS(<u>#user_name : TEXT, #friend_name : TEXT</u>)
 
-MESSAGES(<u>id : INT</u>, message : VARCHAR(1000), #sender : TEXT, #receiver : TEXT (Null), #group_id :INT (Null), date : DATETIME (Default : Current_timestamp))
+MESSAGES(<u>id : INT</u>, message : VARCHAR(1000), #sender : TEXT, #receiver : TEXT (Null), #group_id :INT (Null), date : DATETIME (Default = Current_timestamp))
 
 GROUPES(<u>group_id : INT</u>, name : TEXT, members : TEXT)
+
+STORIES(<u>story_id : INT</u>, poster : TEXT, image : TEXT, views : INT (Default = 0), date : DATETIME (Default = Current_timestamp))
