@@ -4,6 +4,7 @@ API de messagerie.
 GitHub : https://github.com/Tadf0in/Hamstergram
 """
 import sqlite3
+from PIL import Image # Pour les stories
 
 if __name__ == '__main__':
     TESTING = True
@@ -367,6 +368,55 @@ def members_in_group(group_id : int) -> list :
     return sorted(members)
 
 
+def add_story(user : str, image : str) -> int :
+    """ Ajoute une story
+    In : user : username de celui qui poste la story
+         image : url de l'image affichée en story
+    Out :
+        -1 si paramètres invalides
+        0 si story bien postée
+    """
+    if type(image) != str or type(user) != str or not user_exists(user) :
+        return -1 # Paramètres invalides
+
+    query = """SELECT story_id FROM STORIES
+    ORDER BY story_id DESC
+    """
+    id = _execute(query)
+    if id == [] :
+        id = 1
+    else :
+        id = id[0][0] + 1
+
+    url = f'Stories/{id}.png'
+
+    try :
+        img = Image.open(image) 
+        img.save(url)
+    except FileNotFoundError :
+        return -1 # Image introuvable
+
+    query = """ INSERT INTO STORIES (story_id, poster, image)
+    VALUES (?, ?, ?);
+    """
+    _execute(query, (id, user, url)) # Ajout de l'id au cas ou la dernière story a été supprimée
+    return 0
+
+
+def delete_story(story_id : int) -> int:
+    """ Permet de supprimer une story
+    In : story_id : id de la story a supprimer
+    Out : -1 si erreur ou argument invalide, 0 sinon
+    """
+    if isinstance(story_id, int):  # On vérifie le type de l'argument
+        query = """SELECT story_id FROM STORIES WHERE story_id=?"""
+        if _execute(query, (story_id,)) != []:  # On vérifie que la story existe
+            query = """DELETE FROM STORIES WHERE story_id=?"""
+            _execute(query, (story_id,))  # On supprime la story 
+            return 0  # On renvoie 0 car tout s'est bien passé
+    return -1  # Erreur ou arguments invalides
+
+
 def _test_passed(function_name):
     print("Tests passés pour", str(function_name))
     
@@ -381,7 +431,7 @@ if TESTING:
     # Creation des relations dans la base de données: (On est obligés de le faire en deux fois avec 
     # la methode execute de sqlite 3)
     create_tables = [
-    """CREATE TABLE "USERS" (
+        """CREATE TABLE "USERS" (
             "username"    TEXT NOT NULL,
             "name"    TEXT NOT NULL,
             "mail"    TEXT NOT NULL UNIQUE,
@@ -390,7 +440,7 @@ if TESTING:
             PRIMARY KEY("username")
         );
         """,
-    """CREATE TABLE "FRIENDS" (
+        """CREATE TABLE "FRIENDS" (
             "user_name"    TEXT NOT NULL,
             "friend_name"    TEXT NOT NULL,
             PRIMARY KEY("user_name","friend_name"),
@@ -398,14 +448,14 @@ if TESTING:
             FOREIGN KEY("friend_name") REFERENCES "USERS"("username")
         );
         """,
-    """CREATE TABLE "GROUPS" (
+        """CREATE TABLE "GROUPS" (
             "group_id"    INTEGER NOT NULL,
             "name"    TEXT NOT NULL,
             "members"    TEXT NOT NULL,
             PRIMARY KEY("group_id" AUTOINCREMENT)
         );
         """,
-    """CREATE TABLE "MESSAGES" (
+        """CREATE TABLE "MESSAGES" (
             "msg_id"    INTEGER NOT NULL,
             "content"    VARCHAR(1000) NOT NULL,
             "sender"    TEXT NOT NULL,
@@ -418,17 +468,37 @@ if TESTING:
             CHECK("receiver" NOT NULL OR "group_id" NOT NULL),
             PRIMARY KEY("msg_id" AUTOINCREMENT)
         );
+        """,
+        """CREATE TABLE "STORIES" (
+            "story_id"	INTEGER NOT NULL,
+            "poster"	TEXT NOT NULL,
+            "image"	TEXT NOT NULL,
+            "views"	INTEGER NOT NULL DEFAULT 0,
+            "date"	DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
+            PRIMARY KEY("story_id" AUTOINCREMENT),
+            FOREIGN KEY("poster") REFERENCES "USERS"("username")
+        );
+        """]
+
+    # On ajoutes des données dans les relations
+    inserts = [
+        """INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
+    ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
+    ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')
+        """,
+    """INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
+        """,
+    """INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")
+        """,
+    """INSERT INTO STORIES (poster, image) VALUES ('ninobg74', 'Stories/1.png')
         """]
     
+    # On éxécute le code sql
     for create_table in create_tables:
         _execute(create_table)
-    # On ajoutes des données dans les relations
-    _execute("""INSERT INTO USERS (username, name, mail, password) VALUES ('JexisteDeja', 'Existe Deja', 'existe.deja@mail.fr', 'azerty123'), 
-    ('JeSuisDejaAmi', 'Deja Ami', 'jesuisdejaami@gmail.com', 'lesbananescesttropbon'),
-    ('ninobg74', 'Nino Faust', 'faust.nino@gmail.com', 'jaimelansimaischut')""")
-    _execute("""INSERT INTO FRIENDS (user_name, friend_name) VALUES ('JexisteDeja', 'JeSuisDejaAmi')
-    """)
-    _execute("""INSERT INTO GROUPS (name, members) VALUES ("lol", "ninobg74;JexisteDeja;JeSuisDejaAmi")""")
+        
+    for insert in inserts:
+        _execute(insert)
 
     # Tests pour add_user() :
     # On verifie que la table USERS contient les bonnes informations
@@ -563,6 +633,23 @@ if TESTING:
     assert delete_msg(0) == -1 # Message inexistant
     assert delete_msg(1) == 0 # Good
     _test_passed('delete_msg')
+
+    # Tests pour add_story():
+    assert add_story('InconnuAuBataillon', 'image.png') == -1 # Username invalide
+    assert add_story(74, 'test.png') == -1 # Username pas str
+    assert add_story('JexisteDeja', 12) == -1 # Image pas str
+    assert add_story('ninobg74', 'imageinexistante.png') == -1 # Image inexistante
+    assert add_story('JexisteDeja', 'Stories/1.png') == 0 # All good
+    t = input('')
+    remove('Stories/2.png')
+    _test_passed("add_story")
+
+    # Tests pour delete_story():
+    assert delete_story("salut") == -1
+    assert delete_story(1000) == -1
+    assert delete_story(1) == 0
+    _test_passed("delete_story")
+
 
     # On supprime la BDD temporaire
     t = input('')  # wait before deleting test.db
